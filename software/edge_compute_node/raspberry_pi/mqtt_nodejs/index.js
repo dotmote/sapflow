@@ -28,7 +28,8 @@ client.on('message', (topic, message) => {
 			outsideTemp,
 			outsideHumidity,
 			soilMoisture,
-			rtcUnixTimestamp
+			rtcUnixTimestamp,
+			millisSinceReferenceTemp
 		} = messageJSON;
 		console.log('nodeID: ', id);
 		console.log('temp1', temp1);
