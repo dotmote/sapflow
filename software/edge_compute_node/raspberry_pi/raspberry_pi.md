@@ -12,3 +12,7 @@
 2. Install [mosquitto](https://randomnerdtutorials.com/how-to-install-mosquitto-broker-on-raspberry-pi/).
 3. Download, install, and run the [MQTT broker script](/mqtt_nodejs).
 4. Place the Raspberry Pi on the same WiFi network as the dataloggers.
+
+## Considerations
+- IP address
+- setting up ntp sync
