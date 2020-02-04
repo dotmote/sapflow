@@ -5,5 +5,6 @@ This script subscribes to the MQTT broker running on the Raspberry Pi and writes
 
 ## Setup
 1. `cd` into the directory.
-2. Run `$ npm install`
-3. Run `$ node index.js`
+2. Run `$ npm install`.
+3. Run `$ mkdir data` to create a directory called `data`.
+4. Run `$ node index.js`.
