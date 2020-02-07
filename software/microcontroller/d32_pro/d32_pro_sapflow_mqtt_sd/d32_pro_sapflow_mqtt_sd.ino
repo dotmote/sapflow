@@ -25,9 +25,6 @@ RtcDS3231<TwoWire> Rtc(Wire);
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 RtcDateTime now;
 uint32_t rtcUnixTimestamp;
-// offset used here because the RtcDateTime data type returns the number of seconds that have elapsed since 1/1/2000,
-// rather than 1/1/1970 for unix time
-uint32_t offset = 946713600;
 char displayDatestring[20];
 
 // Deep sleep
@@ -456,8 +453,10 @@ void loop()
     now = Rtc.GetDateTime();
     Serial.print(F("The current time is: "));
     printDateTime(now);
-    rtcUnixTimestamp = now + offset;
     Serial.println();
+    rtcUnixTimestamp = now.Epoch32Time();
+    Serial.print(F("The current unix timestamp is: "));
+    Serial.println(rtcUnixTimestamp);
     tempSensorTimer = millis();
     temp1 = sensor.readTemp();
     Serial.print("Sensor 1 Temperature (C): ");
@@ -512,7 +511,7 @@ void loop()
       file.print(",");
       file.print(soilMoisture);
       file.print(",");
-      file.print(now + offset);
+      file.print(rtcUnixTimestamp);
       file.print(",");
       file.println(clientID);
       file.close();
