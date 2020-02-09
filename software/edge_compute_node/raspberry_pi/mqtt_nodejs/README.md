@@ -11,3 +11,4 @@ This script subscribes to the MQTT broker running on the Raspberry Pi and writes
 
 ## Running the script
 1. Ensure that you are in the same directory as the script `index.js` to run the script
+
