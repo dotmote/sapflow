@@ -19,7 +19,7 @@ client.on('connect', () => {
 client.on('message', (topic, message) => {
 	try {
 		const messageJSON = JSON.parse(message.toString());
-		console.log(`MQTT message received: ${messageJSON}`);
+		console.log(`MQTT message received: ${JSON.stringify(messageJSON)}`);
 		const {
 			id,
 			temp1,
