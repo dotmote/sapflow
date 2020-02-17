@@ -51,14 +51,25 @@ client.on('message', (topic, message) => {
 		const humanTimestamp = `${currentTime.getUTCMonth() +
 			1}/${currentTime.getUTCDate()}/${currentTime.getUTCFullYear()} ${currentTime.getUTCHours()}:${currentTime.getUTCMinutes()}:${currentTime.getUTCSeconds()}`;
 
+		// human readable string for datafiles. format is:
+		// <nodeId>_<localTimeRoundedToHour>_<unixTimestamp>.csv
+		// for example:
+		// 2_2_2020-02-17T21_00_00.000Z_1581973200.csv
+		const localTimeRoundedToHour = new Date(
+			currentTime.getFullYear(),
+			currentTime.getMonth(),
+			currentTime.getDate(),
+			currentTime.getHours()
+		).toISOString().replace(/:/g, '_');
+
 		console.log('Writing to csv...');
 
-		const wsHeader = fs.createWriteStream(`./data/${id}_${currentTimeRoundedToHour}.csv`, { flags: 'wx' });
+		const wsHeader = fs.createWriteStream(`./data/${id}_${localTimeRoundedToHour}_${currentTimeRoundedToHour}.csv`, { flags: 'wx' });
 		wsHeader.on('error', (err) => {
 			console.log('Header row written. Appending data to existing file.');
 		});
 
-		const wsRow = fs.createWriteStream(`./data/${id}_${currentTimeRoundedToHour}.csv`, { flags: 'a' });
+		const wsRow = fs.createWriteStream(`./data/${id}_${localTimeRoundedToHour}_${currentTimeRoundedToHour}.csv`, { flags: 'a' });
 
 		// write header row to top of CSV
 		csv.writeToStream(
@@ -86,7 +97,7 @@ client.on('message', (topic, message) => {
 			wsRow,
 			[
 				// [ 'unix_timestamp', 'human_timestamp', 'nodeID', 'temp1', 'temp2', 'millisSinceHeatPulse' ],
-				[ '' ],
+				[''],
 				[
 					unixTimestamp,
 					humanTimestamp,
