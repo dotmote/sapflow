@@ -1,0 +1,98 @@
+---
+title: "Sapflow data analysis"
+author: "Aji John"
+date: "2/15/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readr)
+library(lubridate)
+```
+
+## R Markdown for analyzing the data from the sensors
+
+Put the data files in the folder 'data' in the current directory.
+
+```{r cars}
+location <- '.'
+
+# Storing the column names because we might have a case where file headers are not written.
+
+colNamesSapflow <- c("unix_timestamp" ,"human_timestamp"  ,        "nodeID"    ,              
+  "temp1"    ,                "temp2"  ,                  "millisSinceHeatPulse"   , 
+"outsideTemp"        ,      "outsideHumidity"      ,    "soilMoisture"  ,          
+ "rtcUnixTimestamp"    ,     "millisSinceReferenceTemp")
+
+# get list of files 
+files <- list.files(paste(location, "data", sep="/"), pattern=".csv", full.names=TRUE)
+
+```
+
+Read and merge all the dataframes (one dataframe per CSV)
+```{r cars}
+df <- data.frame()
+
+for ( file in files ) {
+  file_df <- read_csv(file)
+  # Not ideal, but skipping for now, these the files where we don't have the header
+  # TODO support parsing the files whicxh don't have the header
+  if ((colnames(file_df)[1] == "unix_timestamp"))
+    df <- rbind(df,file_df)
+}
+
+```
+
+## Parse the dates
+Complicated but essential part, human timestamp is bound to be in UTC, so converting to local timse zone (Pacific)
+
+```{r }
+
+# Join them all into a single data frame
+sensor_data <- df
+sensor_data$human_timestamp<- strptime(sensor_data$human_timestamp, "%m/%d/%Y %H:%M:%S",tz="Europe/London")
+sensor_data$human_timestamp_pst<-format(as.POSIXct(sensor_data$human_timestamp),tz="America/Los_Angeles",usetz=TRUE)
+sensor_data$human_timestamp_pst<- as.POSIXct(sensor_data$human_timestamp_pst)
+
+```
+
+Storing , month and day.
+
+```{r }
+
+
+sensor_data$day<- day(sensor_data$human_timestamp_pst)
+sensor_data$month<- month(sensor_data$human_timestamp_pst)
+```
+
+Plot the data, spot check. Ideally, don't want to see +40 or -40, issue with sensor
+
+```{r }
+
+# Join them all into a single data frame
+sensor_data %>% select(human_timestamp_pst,temp1,temp2,day) %>% filter(day ==7)  %>% 
+  ggplot() + 
+geom_line( aes(x=human_timestamp_pst,y=temp1, color = "TC1")) +
+geom_line( aes(x=human_timestamp_pst,y=temp2, color = "TC2"))
+
+```
+Another way to validate , we want ratios to be above 0. Sensor malfunction if it is below 0.
+
+```{r }
+
+# Join them all into a single data frame
+sensor_data %>% select(human_timestamp_pst,temp1,temp2,day)   %>% 
+  ggplot() + 
+geom_histogram( aes(temp1/temp2),binwidth = .5) + xlim(-2,2) + 
+  facet_grid(.~day)+
+  theme_minimal(base_size=24) +
+   geom_vline(xintercept = 0, linetype="dotted", 
+                color = "red", size=1) +
+  labs(x='Ratio of Temp 1 and 2',y='Count',title = "")
+ ggsave("Sanity-check.png",dpi=300, dev='png', height=12, width=18, units="in")
+
+```
+
+
