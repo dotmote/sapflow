@@ -20,16 +20,23 @@
 
 # Checklist for D32 Pro
 
-## Board:
+## Board: [Arduino-ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
 - [ ] Connect microcontroller via USB.
-- [ ] Install [Arduino-ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md). 
 - [ ] In Arduino, open Preferences and copy release link to Additional Boards Manager URLs. Separate multiple URLs with commas. (Files > Preferences)
 - [ ] Open Boards Manager, search "esp32" and install. (Tools > Board > Boards Manager)
 - [ ] Switch board to LOLIN D32 PRO. (Tools > Board)
 
 ## Dependencies:
-- [ ] Install [dependencies](https://github.com/dotmote/sapflow/blob/master/software/microcontroller/d32_pro/d32.md): online or search in Library Manager. (Tools > Manage Libraries)
-- [ ] For PubSubClient, increase max packet size from 128b to 512b
+- [ ] In Library Manager, search and install the following libraries (Tools > Manage Libraries):
+    - [Adafruit GFX](https://github.com/adafruit/Adafruit-GFX-Library)
+    - [ArduinoJSON](https://arduinojson.org/) by Benoit Blanchon
+    - [HDC2080 Arduino Library](https://github.com/lime-labs/HDC2080-Arduino) by Lime Labs
+    - [PubSubClient](https://pubsubclient.knolleary.net/) by Nick O'Leary
+    - [RTC by Makuna](https://github.com/Makuna/Rtc/wiki) by Michael C. Miller
+- [ ] These optional libraries can be downloaded online and copied to Arduino Libraries folder in Finder. Comment out applicable lines in code if unused. (In Finder, Arduino > libraries)
+    - [LOLIN E-Paper Display Library](https://github.com/wemos/LOLIN_EPD_Library)
+    - [WEMOS SHT3x Arduino Library](https://github.com/wemos/WEMOS_SHT3x_Arduino_Library)
+- [ ] For PubSubClient, edit PubSubClient.h increase max packet size from 128b to 512b.
 (In Finder, Arduino > libraries > PubSubClient > src > PubSubClient.h > Edit “#define MQTT_MAX_PACKET_SIZE 512”)
 
 ## Network settings:
