@@ -87,7 +87,7 @@
 - [ ] NOTE: If "AutoConnectAP" network does not appear:
     - Press and hold Reset button on microcontroller for 5 seconds. 
     - In code, activate `//wifiManager.resetSettings();` to `wifiManager.resetSettings();`. Upload to microcontroller.
-    - "AutoConnectAP" should now appear. Connect through phone.
+    - "AutoConnectAP" network should now appear. Connect through phone.
     - In code, re-comment out `wifiManager.resetSettings();` to `//wifiManager.resetSettings();`. Re-upload to microcontroller.
 
 ## Check:
