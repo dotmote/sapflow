@@ -84,7 +84,7 @@
     - On next screen, select “Configure WiFi”.
     - Select WiFi network, enter password, and select "Save".
     - Wait to connect. “AutoConnectAP” will disappear from network list when complete.
-- [ ] NOTE: If "AutoConnectAP" does not appear,
+- [ ] NOTE: If "AutoConnectAP" network does not appear:
     - Press and hold Reset button on microcontroller for 5 seconds. 
     - In code, activate `//wifiManager.resetSettings();` to `wifiManager.resetSettings();`. Upload to microcontroller.
     - "AutoConnectAP" should now appear. Connect through phone.
