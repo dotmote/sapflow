@@ -86,9 +86,11 @@ void setup()
     ;
 
   //WiFiManager
-  //Local intialization. Once its business is done, there is no need to keep it around
+  //Local initialization. Once its business is done, there is no need to keep it around
   WiFiManager wifiManager;
   //reset saved settings
+  // NOTE: Activate when connecting to new WiFi network. Upload to microcontroller, connect through AutoConnectAP on phone,
+  // then re-comment out and re-upload to microcontroller.
   //wifiManager.resetSettings();
 
   //set custom ip for portal
