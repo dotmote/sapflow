@@ -8,7 +8,7 @@
 * Aluminum foil (~ 5 x 12 cm)
 
 ## Directions:
-1. Connect sensor to board (D32 Pro or D1 Mini).
+1. Connect sensor to microcontroller (D32 Pro or D1 Mini).
 2. Position sensor on stem (width < 1 cm). On each plant, choose locations of similar height and stem width. Install each sensor in the same orientation (an “E” shape) and facing the same direction.
 3. Use tape to secure the sensor’s straight edge on the stem. The nodes should press firmly against the stem’s surface. 
 4. Use 2 twist-ties to tighten and secure the sensor’s hold.
@@ -23,7 +23,8 @@
 ## Board:
 - [ ] Connect microcontroller via USB.
 - [ ] Install [Arduino-ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md). 
-- [ ] In Arduino, open Preferences and copy release link to Additional Boards Manager URLs.
+- [ ] In Arduino, open Preferences and copy release link to Additional Boards Manager URLs. Separate multiple URLs with commas. (Files > Preferences)
+- [ ] Open Boards Manager, search "esp32" and install. (Tools > Board > Boards Manager)
 - [ ] Switch board to LOLIN D32 PRO. (Tools > Board)
 
 ## Dependencies:
