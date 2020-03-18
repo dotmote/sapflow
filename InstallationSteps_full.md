@@ -17,7 +17,7 @@
 5. When secure in place, wrap piece of bubble wrap around the stem and tape in place. This helps buffer air temperature.
 6. Wrap aluminum foil around the bubble wrap and tape in place. This helps buffer light; ensure there are no holes or openings where light can enter. 
 
-<img src="/docs/InstallationSensor1.png" width=200> <img src="/docs/InstallationSensor2.png" width=200> <img src="/docs/InstallationSensor3.png" width=200> <img src="/docs/InstallationSensor4.png" width=200>
+<img src="/docs/InstallationSensor1.png" width=210> <img src="/docs/InstallationSensor2.png" width=210> <img src="/docs/InstallationSensor3.png" width=210> <img src="/docs/InstallationSensor4.png" width=210>
 
 # Checklist for D32 Pro
 
