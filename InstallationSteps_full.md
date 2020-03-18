@@ -7,6 +7,8 @@
 * Bubble wrap (~ 5 x 12 cm)
 * Aluminum foil (~ 5 x 12 cm)
 
+<img src="/docs/InstallationMaterials.png" width=400>
+
 ## Directions:
 1. Connect sensor to microcontroller (D32 Pro or D1 Mini).
 2. Position sensor on stem (width < 1 cm). On each plant, choose locations of similar height and stem width. Install each sensor in the same orientation (an “E” shape) and facing the same direction.
