@@ -7,7 +7,7 @@
 * Bubble wrap (~ 5 x 12 cm)
 * Aluminum foil (~ 5 x 12 cm)
 
-<img src="/docs/InstallationMaterials.png" width=400>
+<img src="/docs/InstallationMaterials.png" width=600>
 
 ## Directions:
 1. Connect sensor to microcontroller (D32 Pro or D1 Mini).
@@ -17,8 +17,7 @@
 5. When secure in place, wrap piece of bubble wrap around the stem and tape in place. This helps buffer air temperature.
 6. Wrap aluminum foil around the bubble wrap and tape in place. This helps buffer light; ensure there are no holes or openings where light can enter. 
 
-<img src="/docs/SensorInstall1.png" width=400> <img src="/docs/SensorInstall2.png" width=400> 
-<img src="/docs/SensorInstall3.png" width=400> <img src="/docs/SensorInstall4.png" width=400>
+<img src="/docs/InstallationSensor1.png" width=200> <img src="/docs/InstallationSensor2.png" width=200> <img src="/docs/InstallationSensor3.png" width=200> <img src="/docs/InstallationSensor4.png" width=200>
 
 # Checklist for D32 Pro
 
