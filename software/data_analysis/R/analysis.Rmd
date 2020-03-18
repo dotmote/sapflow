@@ -67,6 +67,15 @@ sensor_data$day<- day(sensor_data$human_timestamp_pst)
 sensor_data$month<- month(sensor_data$human_timestamp_pst)
 ```
 
+Export dataframe (df) to csv
+
+```{r}
+
+write.csv(df, "FILE NAME", row.names = TRUE)
+
+
+```
+
 Plot the data, spot check. Ideally, don't want to see +40 or -40, issue with sensor
 
 ```{r }
