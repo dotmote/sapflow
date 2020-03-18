@@ -1,0 +1,311 @@
+---
+title: "R-Heat-Ratio"
+author: "Aji John"
+date: "2/28/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Load the pkgs
+
+```{r cars}
+library(tidyverse)
+library(lubridate)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+node2 <- read_csv("./data/20200227_Node2.csv")
+node2$human_timestamp_GMT <- as.POSIXct(node2$unix_timestamp,origin="1970-01-01",tz="GMT")
+node2$human_timestamp_PST<-format(as.POSIXct(node2$human_timestamp_GMT),tz="America/Los_Angeles",usetz=TRUE)
+node2$human_timestamp_PST<- as.POSIXct(node2$human_timestamp_PST)
+node2$hr <- hour(node2$human_timestamp_PST)
+node2$day <- day(node2$human_timestamp_PST)
+node2$minute <- minute(node2$human_timestamp_PST)
+```
+```{r pressure, echo=FALSE}
+node2$logms <- log(node2$millisSinceHeatPulse)
+node2 %>% ggplot(aes(logms)) + geom_histogram() + theme_minimal(base_size = 18)
+```
+
+
+```{r, echo=FALSE}
+summary(node2)
+```
+
+Look at low values of lo
+
+#lets find the unique low values
+```{r, echo=FALSE}
+#summary(node2$logms)
+
+nrow(node2 %>% filter(node2$millisSinceHeatPulse ==0))
+```
+```{r, echo=FALSE}
+node2 %>% filter(hr %in% c(18:18) & minute %in% c(0:30)) %>% ggplot() + 
+geom_line( aes(x=human_timestamp_PST,y=temp1, color = "TC1")) +
+geom_line( aes(x=human_timestamp_PST,y=temp2, color = "TC2"))+
+geom_line(aes(x=human_timestamp_PST,y=log(millisSinceHeatPulse), color = "ms ")) + theme_minimal(base_size = 24)
+```
+
+
+
+```{r, echo=FALSE}
+node2 %>% filter(hr %in% c(18:18) & minute %in% c(0:30)) %>% ggplot() + 
+geom_line( aes(x=human_timestamp_PST,y=temp1, color = "TC1")) +
+geom_line( aes(x=human_timestamp_PST,y=temp2, color = "TC2"))+
+  theme_minimal(base_size = 24)
+```
+
+
+```{r, echo=FALSE}
+#Method to validate the segments
+T_range_tc1 <- range(node2$temp1,na.rm=T)
+T_range_tc2 <- range(node2$temp2,na.rm=T)
+
+var = "-raw"
+plot(0,0,ylim=c(T_range_tc2),xlim =c(T_range_tc1), type='n',xlab=paste('TC1',var),ylab=paste('TC2',var))
+
+i <- 1
+prevmillisSinceHeatPulse <- 0
+
+#for (i in 1:nrow(node4)){
+for (i in 1:1){
+ 
+  currentRow <- node2[i,]
+
+  #store current tc1 ad tc2
+  preTc1 <- currentRow$temp1
+  preTc2 <- currentRow$temp2
+  
+  #if first row is zero, we skip till we find the next 0
+  if(currentRow$millisSinceHeatPulse < prevmillisSinceHeatPulse | currentRow$millisSinceHeatPulse == 0 | currentRow$millisSinceHeatPulse > 0) 
+     {
+      #heat pulse applied
+      # accumalate all therows
+       while(TRUE)
+           {
+            pastRow <- node2[i,]
+            preTc1 <- pastRow$temp1
+            preTc2 <- pastRow$temp2
+            i <- i + 1
+            newRow <- node2[i,]
+             if(newRow$millisSinceHeatPulse < pastRow$millisSinceHeatPulse)
+               {
+                  break
+               }
+         }
+      
+     } 
+   
+}
+```
+
+
+Jump ahead
+```{r, echo=FALSE}
+#value of i is the starting of the required segment
+
+tc1<-0
+tc2<- 0
+
+interSR <- rep(NA,1)
+slpSR <- rep(NA,1)
+r2SR <- rep(NA,1)
+segments <- rep(NA,1)
+
+var = "-raw"
+plot(0,0,ylim=c(T_range_tc2),xlim =c(T_range_tc1), type='n',xlab=paste('TC1',var),ylab=paste('TC2',var))
+
+j<- 1
+while(TRUE)
+    {
+      pastRow <- node2[i,]
+      preTc1 <- pastRow$temp1
+      preTc2 <- pastRow$temp2
+    
+      i <- i + 1
+      newRow <- node2[i,]
+            
+      tc1 <- append(tc1,newRow$temp1)
+      tc2 <- append(tc2,newRow$temp2)
+      
+      if(is.na(newRow$millisSinceHeatPulse))
+          {
+           break
+      }
+    
+      if(newRow$millisSinceHeatPulse < pastRow$millisSinceHeatPulse)
+               {
+
+                  #break
+                  points(tc1~tc2,pch='.')
+                  fit <- lm(tc1~tc2,na.action = na.omit)
+                  abline(fit,col="red")
+                   #text(0,fit$coefficients[1],"pltName",cex=.9, pos=4) 
+         
+                  segment<- list(preTc1,preTc2,fit$coefficients[1],fit$coefficients[2],c(tc1),c(tc2),pastRow$human_timestamp_PST)
+                  #names(newseg)<-c("intercept","slope","tc1 vector","tc2 vector")
+         
+                  #first time
+                  if(j == 1)
+                  {    
+                    #Convert to a dataframe, transpose, and convert the resulting matrix back to a dataframe
+                    df= as.data.frame(t(as.data.frame(matrix(segment))),stringsAsFactors=FALSE)
+
+                    #Strip out the rownames if desired (set it to NULL)
+                    #rownames(df)<-NULL
+                    names(df)<-c("basetc1","basetc2","intercept","slope","tc1vector","tc2vector","hts")  
+                  }
+                  else{
+                      df[nrow(df)+1,] = as.data.frame(t(as.data.frame(matrix(segment))),stringsAsFactors=FALSE)
+                  } 
+                  
+                  interSR[j] <- fit$coefficients[1]
+                  slpSR[j] <- fit$coefficients[2]
+                  r2SR[j] <- summary(fit)$r.squared
+         
+                  j <- j + 1
+                 
+                  tc1<-0
+                  tc2<- 0
+                  #adding one more element to the array
+                  interSR <- rep(interSR,1)
+                  slpSR <- rep(slpSR,1)
+                  r2SR <- rep(r2SR,1)
+                  segments <- rep(segments,1)
+               }
+      
+    }
+
+    #points(tc1~tc2,pch='.')
+    #fit <- lm(tc1~tc2,na.action = na.omit)
+    #abline(fit,col="red")
+  
+   #interSR[i] <- fit$coefficients[1]
+   #slpSR[i] <- fit$coefficients[2]
+   #r2SR[i] <- summary(fit)$r.squared
+ 
+         
+  abline(0,1,lwd=4)
+```
+
+
+```{r, echo=FALSE}
+length(slpSR)
+plot(interSR,slpSR)
+```
+
+```{r, echo=FALSE}
+#convert the colums to numeric
+df$basetc1<- as.numeric(df$basetc1)
+df$basetc2<- as.numeric(df$basetc2)
+df$intercept<- as.numeric(df$intercept)
+df$slope<- as.numeric(df$slope)
+```
+
+```{r, echo=FALSE}
+# Rob - Calculate the HR for all the segments
+# Create new dataframe with hr values and timestamps. At this stage we can create a dataframe with the 
+# same number of rows as the number of heat pulses...but later we will want to be able to simply add a row to the end of the 
+# already existing dataframe (when this becomes much larger) 
+hr.final <- matrix(NA,ncol=2,nrow=length(df$slope))
+hr.final <- as.data.frame(hr.final)
+colnames(hr.final) <- c("Timestamp","HR")
+
+# Create a loop to calculate HR for each heat pulse
+# The number of executions is equal to the number of heat pulses...which should be equal to the number of slopes calculated earlier...(There might be a better way to identify the number of heat pulses, but this will work for now)
+for (i in c(1:length(df$slope))){
+    # the vectors are in a numeric list - starts with indice 1
+    #df[1,]$tc1vector[[1]][0]
+    df[i,]$tc1vector[[1]][1]
+    df[i,]$tc1vector[[1]][2]
+
+    df[i,]$tc1vector[[1]][1] - df[i,]$tc1vector[[1]][2]
+    
+    # delta of TC1
+    deltatc1<- df[i,]$tc1vector[[1]] - df[i,]$basetc1
+    deltatc2<- df[i,]$tc2vector[[1]] - df[i,]$basetc2
+    
+    # Calculate the HR for all points for each given heat pulse
+    hr.all.points <- deltatc1/deltatc2
+    
+    # Extract the mean hr value
+    # used to be 40:60
+    hr.all.points[55:75]
+    (hr <- mean(hr.all.points[55:75]))
+    
+    # Find timestamp (or heat pulse number at this stage...will have to change that later)
+    hr.plus.time <- c(i,hr)
+    
+    # Save hr value for each  
+    # This is where we might want to simply add another row to the dataframe...something like: hr.all <- rbind(hr.all,hr.plus.time)
+    # but for now...
+    #hr.final[i,1] <- i
+    hr.final[i,1] <- df[i,]$hts
+    hr.final[i,2] <- hr 
+}
+
+hr.final[,2] <- 1/hr.final[,2]
+plot(hr.final[,2], ylim=c(0,5),las=1)
+# Zero flow HR = 1
+abline(h=1,lty=2)
+```
+
+
+```{r, echo=FALSE}
+str(hr.final)
+plot(hr.final)
+```
+```{r, echo=FALSE}
+# delta of TC1
+deltatc1<- df[1,]$tc1vector[[1]] - df[1,]$basetc1
+deltatc2<- df[1,]$tc2vector[[1]] - df[1,]$basetc2
+```
+
+```{r, echo=FALSE}
+# delta of TC1
+length(deltatc1)
+```
+
+
+```{r, echo=FALSE}
+# delta of TC1
+#Skip the first two elements
+deltatc1<- deltatc1[c(3:length(deltatc1))]
+deltatc2<- deltatc2[c(3:length(deltatc2))]
+hr <- deltatc1[c(3:length(deltatc1))]/deltatc2[c(3:length(deltatc2))]
+plot(deltatc1,col = "red") 
+points(deltatc2,col="green")
+points(hr,col="blue")
+
+```
+GMT
+
+```{r, echo=FALSE}
+library(ggpubr)
+hr.final$datetime <- as.POSIXct(hr.final$Timestamp, origin="1970-01-01", tz="GMT")
+hr.final$datetimefmt <- as.POSIXct(hr.final$datetime, format = "%Y-%m-%d %H:%M:%S")
+hr.final$datetimefmt_PST<-format(as.POSIXct(hr.final$datetimefmt),tz="America/Los_Angeles",usetz=TRUE)
+hr.final$datetimefmt_PST<- as.POSIXct(hr.final$datetimefmt_PST)
+
+hr.final %>% ggplot( aes(datetimefmt, HR)) +
+       geom_point() + geom_smooth(span=0.2) + theme_minimal(base_size = 18) + theme_cleveland()
+```       
+PST
+
+```{r, echo=FALSE}
+
+
+
+hr.final %>% ggplot( aes(datetimefmt_PST, 1/HR)) + 
+       geom_point() + geom_smooth(span=0.2) + theme_minimal(base_size = 18) + theme_cleveland()
+```  
