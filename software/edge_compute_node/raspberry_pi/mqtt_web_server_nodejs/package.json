@@ -1,0 +1,16 @@
+{
+  "name": "mqtt_nodejs_web_server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "fast-csv": "^2.5.0",
+    "mqtt": "^3.0.0"
+  }
+}
