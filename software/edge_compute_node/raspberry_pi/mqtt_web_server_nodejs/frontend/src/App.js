@@ -1,9 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+function sapflowReducer(state, action) {
+  switch (action.type) {
+    case 'mqttData':
+      const { id } = action.data;
+      if (!state[id]) {
+        return {
+          ...state,
+          [id]: [action.data]
+        };
+      } else {
+        return {
+          ...state,
+          [id]: [
+            ...state[id],
+            action.data
+          ]
+        };
+      }
+    default:
+      console.error(`Error: no case found for action type: ${action.type}`);
+  }
+}
+
 function App() {
-  const [sapflowData, setSapflowData] = useState([]);
+  const [sapflowState, dispatchSapflowState] = useReducer(sapflowReducer, {});
 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8080');
@@ -25,34 +48,7 @@ function App() {
         if (topic === 'sapflow') {
           const { message } = mqttData;
           const messagePayload = JSON.parse(message);
-          const {
-            id,
-            temp1,
-            temp2,
-            millisSinceHeatPulse,
-            outsideTemp,
-            outsideHumidity,
-            soilMoisture,
-            rtcUnixTimestamp,
-            millisSinceReferenceTemp
-          } = messagePayload;
-
-          setSapflowData((prevState) =>
-            [
-              ...prevState,
-              {
-                id,
-                temp1,
-                temp2,
-                millisSinceHeatPulse,
-                outsideTemp,
-                outsideHumidity,
-                soilMoisture,
-                rtcUnixTimestamp,
-                millisSinceReferenceTemp
-              }
-            ]
-          );
+          dispatchSapflowState({ type: 'mqttData', data: messagePayload });
         }
       }
     }
