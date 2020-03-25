@@ -1,3 +1,19 @@
+// Express web server
+const express = require('express');
+const app = express();
+const PORT = 4000;
+
+app.get('/hello', (req, res) => res.json({ message: 'Hello world!' }));
+app.listen(PORT, () => console.log(`Web server listening on port ${PORT}`));
+
+// Websocket server
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ port: 8080 });
+
+wss.on('connection', function connection(ws, req) {
+	console.log(`New client connected.`);
+});
+
 const mqtt = require('mqtt');
 const fs = require('fs');
 const csv = require('fast-csv');
@@ -17,6 +33,16 @@ client.on('connect', () => {
 });
 
 client.on('message', (topic, message) => {
+	wss.clients.forEach(function each(client) {
+		if (client.readyState === WebSocket.OPEN) {
+			client.send(JSON.stringify({
+				type: 'mqtt',
+				topic,
+				message: message.toString()
+			}));
+		}
+	});
+
 	try {
 		const messageJSON = JSON.parse(message.toString());
 		console.log(`MQTT message received: ${JSON.stringify(messageJSON)}`);
