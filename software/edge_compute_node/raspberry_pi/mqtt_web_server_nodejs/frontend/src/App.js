@@ -27,8 +27,6 @@ function App() {
     }
 
     ws.onmessage = (event) => {
-      console.log('Websocket message received: ', event);
-      console.log('event.data', event.data);
       const mqttData = JSON.parse(event.data);
       const { type } = mqttData;
       if (type === 'mqtt') {
