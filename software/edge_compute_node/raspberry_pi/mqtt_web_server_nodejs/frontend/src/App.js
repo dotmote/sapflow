@@ -1,32 +1,20 @@
-import React, { useEffect, useReducer } from 'react';
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
-function sapflowReducer(state, action) {
-  switch (action.type) {
-    case 'mqttData':
-      const { id } = action.data;
-      if (!state[id]) {
-        return {
-          ...state,
-          [id]: [action.data]
-        };
-      } else {
-        return {
-          ...state,
-          [id]: [
-            ...state[id],
-            action.data
-          ]
-        };
-      }
-    default:
-      console.error(`Error: no case found for action type: ${action.type}`);
-  }
-}
-
 function App() {
-  const [sapflowState, dispatchSapflowState] = useReducer(sapflowReducer, {});
+  const [lastHeard, setLastHeard] = useState({});
+  const [sapflowState, setSapflowState] = useState([]);
+
+  useEffect(() => {
+    fetch('/lastHeard')
+      .then(res => res.json())
+      .then(data => {
+        setLastHeard(data.lastHeard);
+      })
+      .catch(e => {
+        console.error('Could not fetch lastHeard route from server due to error: ', e)
+      });
+  }, []);
 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8080');
@@ -48,27 +36,27 @@ function App() {
         if (topic === 'sapflow') {
           const { message } = mqttData;
           const messagePayload = JSON.parse(message);
-          dispatchSapflowState({ type: 'mqttData', data: messagePayload });
+          const { id } = messagePayload;
+
+          setLastHeard((prevState) => {
+            return {
+              ...prevState,
+              [id]: new Date()
+            };
+          });
+
+          setSapflowState((prevState) => {
+            return [...prevState, { ...messagePayload, timeReceived: new Date() }];
+          });
         }
       }
     }
-  }, [])
+  }, []);
 
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <h1>Dotmote Labs Sapflow Dashboard</h1>
       </header>
     </div>
   );

@@ -1,11 +1,3 @@
-// Express web server
-const express = require('express');
-const app = express();
-const PORT = 4000;
-
-app.get('/hello', (req, res) => res.json({ message: 'Hello world!' }));
-app.listen(PORT, () => console.log(`Web server listening on port ${PORT}`));
-
 // Websocket server
 const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8080 });
@@ -31,6 +23,8 @@ const client = mqtt.connect(HOST, {
 client.on('connect', () => {
 	client.subscribe(TOPIC);
 });
+
+let lastHeard = {};
 
 client.on('message', (topic, message) => {
 	wss.clients.forEach(function each(client) {
@@ -63,6 +57,7 @@ client.on('message', (topic, message) => {
 		console.log('millisSinceHeatPulse', millisSinceHeatPulse);
 
 		const currentTime = new Date();
+		lastHeard[id] = currentTime;
 
 		const currentTimeRoundedToHour =
 			Date.UTC(
@@ -148,3 +143,12 @@ client.on('message', (topic, message) => {
 		}
 	}
 });
+
+// Express web server
+const express = require('express');
+const app = express();
+const PORT = 4000;
+
+app.get('/hello', (req, res) => res.json({ message: 'Hello world!' }));
+app.get('/lastHeard', (req, res) => res.json({ lastHeard }));
+app.listen(PORT, () => console.log(`Web server listening on port ${PORT}`));
