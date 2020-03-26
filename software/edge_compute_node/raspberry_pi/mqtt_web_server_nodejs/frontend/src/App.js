@@ -37,16 +37,17 @@ function App() {
           const { message } = mqttData;
           const messagePayload = JSON.parse(message);
           const { id } = messagePayload;
+          const timeReceived = new Date();
 
           setLastHeard((prevState) => {
             return {
               ...prevState,
-              [id]: new Date()
+              [id]: timeReceived
             };
           });
 
           setSapflowState((prevState) => {
-            return [...prevState, { ...messagePayload, timeReceived: new Date() }];
+            return [...prevState, { ...messagePayload, timeReceived }];
           });
         }
       }
