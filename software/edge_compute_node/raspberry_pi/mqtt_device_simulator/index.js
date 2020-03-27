@@ -10,24 +10,25 @@ const client = mqtt.connect(HOST, {
   clientId: 'deviceSimulator'
 });
 
-let MAX_MESSAGES = 0;
+const MAX_MESSAGES = 40;
+let messageCount = 0;
 
 client.on('connect', () => {
   client.subscribe(TOPIC);
   console.log(`Connected to MQTT broker on host: ${HOST} under topic: ${TOPIC}`);
 
   const node1Interval = setInterval(() => {
-    client.publish(`sapflow`, JSON.stringify(sapflowMessageGenerator(1)));
-    MAX_MESSAGES++;
+    client.publish(`sapflow`, JSON.stringify(sapflowMessageGenerator('1')));
+    messageCount++;
   }, 2000);
 
   const node2Interval = setInterval(() => {
-    client.publish(`sapflow`, JSON.stringify(sapflowMessageGenerator(2)));
-    MAX_MESSAGES++;
+    client.publish(`sapflow`, JSON.stringify(sapflowMessageGenerator('2')));
+    messageCount++;
   }, 3000);
 
   client.on('message', () => {
-    if (MAX_MESSAGES >= 20) {
+    if (messageCount >= MAX_MESSAGES) {
       console.log(`${MAX_MESSAGES} messages reached; clearing intervals now`);
       clearInterval(node1Interval);
       clearInterval(node2Interval);
