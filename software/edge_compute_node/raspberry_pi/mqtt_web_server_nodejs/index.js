@@ -2,8 +2,9 @@
 const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8080 });
 
-wss.on('connection', function connection(ws, req) {
+wss.on('connection', function connection(ws) {
 	console.log(`New client connected.`);
+	console.log('Number of clients: ', wss.clients.size);
 });
 
 const mqtt = require('mqtt');
@@ -148,7 +149,31 @@ client.on('message', (topic, message) => {
 const express = require('express');
 const app = express();
 const PORT = 4000;
+const path = require('path');
 
-app.get('/hello', (req, res) => res.json({ message: 'Hello world!' }));
+const ifs = require('os').networkInterfaces();
+const serverIp = Object.keys(ifs)
+	.map(x => ifs[x].filter(x => x.family === 'IPv4' && !x.internal)[0])
+	.filter(x => x)[0].address;
+
+app.use(express.static(path.join(__dirname, 'frontend/build')))
+
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'frontend/build', 'index.html')));
 app.get('/lastHeard', (req, res) => res.json({ lastHeard }));
-app.listen(PORT, () => console.log(`Web server listening on port ${PORT}`));
+app.get('/serverIp', (req, res) => res.json({ serverIp }));
+app.listen(PORT, () => console.log(`Web server listening at ${serverIp}:${PORT}`));
+
+// multi-cast dns TODO: implement mdns to allow for zero-config discovery of webserver
+// const mdns = require('multicast-dns')();
+
+// mdns.on('response', function (response) {
+// 	// console.log('got a response packet:', response);
+// });
+
+// mdns.on('query', function (query) {
+// 	// console.log('got a query packet:', query);
+// 	if (query.questions[0] && query.questions[0].name === 'sapflow.local') {
+// 		console.log('request for sapflow.local received');
+// 		mdns.respond([{ name: 'sapflow.local', type: 'A', data: `${serverIp}` }])
+// 	}
+// });
