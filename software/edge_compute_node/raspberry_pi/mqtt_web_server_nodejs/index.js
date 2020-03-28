@@ -171,7 +171,6 @@ app.listen(PORT, () => {
 const mdns = require('multicast-dns')();
 
 mdns.on('query', function (query) {
-	// console.log('got a query packet:', query);
 	if (query.questions[0] && query.questions[0].name === LOCAL_NAME) {
 		console.log('request for sapflow.local received');
 		mdns.respond([{ name: LOCAL_NAME, type: 'A', data: `${serverIp}:${PORT}`, ttl: 300, flush: true }])
