@@ -150,6 +150,7 @@ const express = require('express');
 const app = express();
 const PORT = 4000;
 const path = require('path');
+const LOCAL_NAME = 'sapflow.local';
 
 const ifs = require('os').networkInterfaces();
 const serverIp = Object.keys(ifs)
@@ -161,19 +162,18 @@ app.use(express.static(path.join(__dirname, 'frontend/build')))
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'frontend/build', 'index.html')));
 app.get('/lastHeard', (req, res) => res.json({ lastHeard }));
 app.get('/serverIp', (req, res) => res.json({ serverIp }));
-app.listen(PORT, () => console.log(`Web server listening at ${serverIp}:${PORT}`));
+app.listen(PORT, () => {
+	console.log(`Web server listening at ${serverIp}:${PORT}`);
+	console.log(`Alternatively, go to http://${LOCAL_NAME}:${4000}`);
+});
 
-// multi-cast dns TODO: implement mdns to allow for zero-config discovery of webserver
-// const mdns = require('multicast-dns')();
+// multi-cast dns. Connect to web app by going to http://sapflow.local:4000.
+const mdns = require('multicast-dns')();
 
-// mdns.on('response', function (response) {
-// 	// console.log('got a response packet:', response);
-// });
-
-// mdns.on('query', function (query) {
-// 	// console.log('got a query packet:', query);
-// 	if (query.questions[0] && query.questions[0].name === 'sapflow.local') {
-// 		console.log('request for sapflow.local received');
-// 		mdns.respond([{ name: 'sapflow.local', type: 'A', data: `${serverIp}` }])
-// 	}
-// });
+mdns.on('query', function (query) {
+	// console.log('got a query packet:', query);
+	if (query.questions[0] && query.questions[0].name === LOCAL_NAME) {
+		console.log('request for sapflow.local received');
+		mdns.respond([{ name: LOCAL_NAME, type: 'A', data: `${serverIp}:${PORT}`, ttl: 300, flush: true }])
+	}
+});
