@@ -40,8 +40,8 @@ client.on('connect', () => {
 function sapflowMessageGenerator(id) {
   return messageFactory({
     id: () => id,
-    temp1: () => 22 + (Math.random() > 0.5 ? -1 : 1),
-    temp2: () => 22 + (Math.random() > 0.5 ? -1 : 1),
+    temp1: () => 22 + Math.random((Math.random() > 0.5 ? -1 : 1)) * 3,
+    temp2: () => 22 + Math.random((Math.random() > 0.5 ? -1 : 1)) * 3,
     millisSinceHeatPulse: () => 10000,
     outsideTemp: () => 22 + (Math.random() > 0.5 ? -1 : 1),
     outsideHumidity: () => 70 + (Math.random() > 0.5 ? -1 : 1),
