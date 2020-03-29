@@ -12,29 +12,28 @@ const client = mqtt.connect(HOST, {
 
 const MAX_MESSAGES = 40;
 let messageCount = 0;
+let intervals = [];
 
 client.on('connect', () => {
   client.subscribe(TOPIC);
   console.log(`Connected to MQTT broker on host: ${HOST} under topic: ${TOPIC}`);
 
-  const node1Interval = setInterval(() => {
+  intervals.push(setInterval(() => {
     client.publish(`sapflow`, JSON.stringify(sapflowMessageGenerator('1')));
-    messageCount++;
-  }, 2000);
+    console.log(`messages sent: ${++messageCount}`);
+  }, 2000));
 
-  const node2Interval = setInterval(() => {
+  intervals.push(setInterval(() => {
     client.publish(`sapflow`, JSON.stringify(sapflowMessageGenerator('2')));
-    messageCount++;
-  }, 3000);
+    console.log(`messages sent: ${++messageCount}`);
+  }, 3000));
+});
 
-  client.on('message', () => {
-    if (messageCount >= MAX_MESSAGES) {
-      console.log(`${MAX_MESSAGES} messages reached; clearing intervals now`);
-      clearInterval(node1Interval);
-      clearInterval(node2Interval);
-    }
-  });
-
+client.on('message', () => {
+  if (messageCount >= MAX_MESSAGES) {
+    console.log(`${MAX_MESSAGES} messages reached; clearing intervals now`);
+    intervals.forEach(interval => clearInterval(interval));
+  }
 });
 
 function sapflowMessageGenerator(id) {
@@ -74,6 +73,8 @@ function messageFactory(messageTemplate) {
   for (let [key, value] of Object.entries(messageTemplate)) {
     message[key] = value();
   }
+
+  console.log('message generated: ', message);
 
   return message;
 }
