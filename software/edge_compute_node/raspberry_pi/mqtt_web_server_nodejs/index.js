@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 // Websocket server
 const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8080 });
@@ -9,7 +11,11 @@ wss.on('connection', function connection(ws) {
 
 const mqtt = require('mqtt');
 const fs = require('fs');
+const { normalize } = require('path');
 const csv = require('fast-csv');
+
+const DATA_DIRECTORY = normalize('./data');
+const UPLOAD_DIRECTORY = normalize('./uploaded');
 
 const HOST = 'mqtt://localhost'; // IP address (e.g., 192.168.1.2) of the MQTT broker (in this case, the IP address of the raspberry pi itself).
 const TOPIC = 'sapflow';
@@ -86,12 +92,12 @@ client.on('message', (topic, message) => {
 
 		console.log('Writing to csv...');
 
-		const wsHeader = fs.createWriteStream(`./data/${id}_${localTimeRoundedToHour}_${currentTimeRoundedToHour}.csv`, { flags: 'wx' });
+		const wsHeader = fs.createWriteStream(`${DATA_DIRECTORY}/${id}_${localTimeRoundedToHour}_${currentTimeRoundedToHour}.csv`, { flags: 'wx' });
 		wsHeader.on('error', (err) => {
 			console.log('Header row written. Appending data to existing file.');
 		});
 
-		const wsRow = fs.createWriteStream(`./data/${id}_${localTimeRoundedToHour}_${currentTimeRoundedToHour}.csv`, { flags: 'a' });
+		const wsRow = fs.createWriteStream(`${DATA_DIRECTORY}/${id}_${localTimeRoundedToHour}_${currentTimeRoundedToHour}.csv`, { flags: 'a' });
 
 		// write header row to top of CSV
 		csv.writeToStream(
@@ -176,3 +182,58 @@ mdns.on('query', function (query) {
 		mdns.respond([{ name: LOCAL_NAME, type: 'A', data: `${serverIp}:${PORT}`, ttl: 300, flush: true }])
 	}
 });
+
+const { rename, readdir, stat } = require('fs').promises;
+const got = require('got');
+const FormData = require('form-data');
+
+const dotmoteApiEndpoint = 'https://api.dotmote.com/sapflow';
+
+uploadToDotmote();
+
+setInterval(async () => {
+	uploadToDotmote();
+}, 1000 * 60 * 60);
+
+async function uploadToDotmote() {
+	let files = await readdir(DATA_DIRECTORY).catch(e => console.log(`Error reading directory: ${e}`));
+
+	files = files.filter((item) => /.*.csv/.test(item));
+
+	for (let [index, file] of files.entries()) {
+		try {
+			const { mtime } = await stat(`${DATA_DIRECTORY}/${file}`).catch(e => {
+				console.log(`Error reading last modified time of file: ${e}`);
+				throw e;
+			});
+
+			if (new Date().valueOf() - mtime.valueOf() > 1000 * 60 * 60 * 2) {
+				console.log(`Last modified time of ${mtime} was > 2 hours ago, so uploading ${file}.`);
+				const form = new FormData();
+				form.append(file, fs.createReadStream(`${DATA_DIRECTORY}/${file}`));
+
+				const response = await got.post(dotmoteApiEndpoint, {
+					body: form,
+					headers: {
+						'x-api-key': process.env.DOTMOTE_API_KEY
+					}
+				}).catch(e => {
+					console.log(`Error sending post request: ${e}`);
+					throw e;
+				});
+
+				console.log('API response.body: ', response.body);
+
+				console.log(`Moving file: ${file}`);
+				await rename(`${DATA_DIRECTORY}/${file}`, `${UPLOAD_DIRECTORY}/${file}`).catch(e => {
+					console.log(`Error moving file: ${e}`);
+					throw e;
+				});
+			} else {
+				console.log(`Last modified time of ${mtime} was <= 2 hours ago, so not uploading ${file} yet.`);
+			}
+		} catch (err) {
+			console.log(`Error when trying to upload file: ${err}`);
+		}
+	}
+}
