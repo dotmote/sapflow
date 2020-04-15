@@ -18,7 +18,7 @@
 6. Wrap aluminum foil around the bubble wrap and tape in place. This helps buffer light; ensure there are no holes or openings where light can enter. 
 
 
-   <img src="/docs/SensorInstall1.png" width=205> <img src="/docs/SensorInstall2.png" width=205> <img src="/docs/SensorInstall3.png" width=205> <img src="/docs/SensorInstall4.png" width=205>
+   <img src="/docs/InstallationSensor1.png" width=205> <img src="/docs/InstallationSensor2.png" width=205> <img src="/docs/InstallationSensor3.png" width=205> <img src="/docs/InstallationSensor4.png" width=205>
 
 
 # Checklist for D32 Pro
