@@ -186,14 +186,17 @@ mdns.on('query', function (query) {
 const { rename, readdir, stat } = require('fs').promises;
 const got = require('got');
 const FormData = require('form-data');
+const CronJob = require('cron').CronJob;
+
+// sets up a cron job to invoke uploadToDotmote() 5 minutes into each hour,
+// e.g., 1:05AM, 2:05AM, 3:05AM...
+const job = new CronJob('0 5 * * * *', function () {
+	uploadToDotmote();
+}, null, true, 'America/Los_Angeles');
+
+job.start();
 
 const dotmoteApiEndpoint = 'https://api.dotmote.com/sapflow';
-
-uploadToDotmote();
-
-setInterval(async () => {
-	uploadToDotmote();
-}, 1000 * 60 * 60);
 
 async function uploadToDotmote() {
 	let files = await readdir(DATA_DIRECTORY).catch(e => console.log(`Error reading directory: ${e}`));
