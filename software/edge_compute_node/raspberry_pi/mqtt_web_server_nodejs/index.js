@@ -205,36 +205,29 @@ async function uploadToDotmote() {
 
 	for (let [index, file] of files.entries()) {
 		try {
-			const { mtime } = await stat(`${DATA_DIRECTORY}/${file}`).catch(e => {
-				console.log(`Error reading last modified time of file: ${e}`);
+			console.log(`Uploading ${file}.`);
+
+			const form = new FormData();
+			form.append(file, fs.createReadStream(`${DATA_DIRECTORY}/${file}`));
+
+			const response = await got.post(dotmoteApiEndpoint, {
+				body: form,
+				headers: {
+					'x-api-key': process.env.DOTMOTE_API_KEY
+				}
+			}).catch(e => {
+				console.log(`Error sending post request: ${e}`);
 				throw e;
 			});
 
-			if (new Date().valueOf() - mtime.valueOf() > 1000 * 60 * 60 * 2) {
-				console.log(`Last modified time of ${mtime} was > 2 hours ago, so uploading ${file}.`);
-				const form = new FormData();
-				form.append(file, fs.createReadStream(`${DATA_DIRECTORY}/${file}`));
+			console.log('API response.body: ', response.body);
+			console.log(`Moving file: ${file}`);
 
-				const response = await got.post(dotmoteApiEndpoint, {
-					body: form,
-					headers: {
-						'x-api-key': process.env.DOTMOTE_API_KEY
-					}
-				}).catch(e => {
-					console.log(`Error sending post request: ${e}`);
-					throw e;
-				});
+			await rename(`${DATA_DIRECTORY}/${file}`, `${UPLOAD_DIRECTORY}/${file}`).catch(e => {
+				console.log(`Error moving file: ${e}`);
+				throw e;
+			});
 
-				console.log('API response.body: ', response.body);
-
-				console.log(`Moving file: ${file}`);
-				await rename(`${DATA_DIRECTORY}/${file}`, `${UPLOAD_DIRECTORY}/${file}`).catch(e => {
-					console.log(`Error moving file: ${e}`);
-					throw e;
-				});
-			} else {
-				console.log(`Last modified time of ${mtime} was <= 2 hours ago, so not uploading ${file} yet.`);
-			}
 		} catch (err) {
 			console.log(`Error when trying to upload file: ${err}`);
 		}
