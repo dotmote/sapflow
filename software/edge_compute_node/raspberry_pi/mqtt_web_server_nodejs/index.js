@@ -24,7 +24,7 @@ const client = mqtt.connect(HOST, {
 	// Config fields if needed to connect to the MQTT broker
 	// username: 'username',
 	// password: 'password',
-	clientId: 'clientName'
+	clientId: 'mqtt-web-server-listener'
 });
 
 client.on('connect', () => {
