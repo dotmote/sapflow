@@ -11,14 +11,14 @@
 
 ## Directions:
 1. Connect sensor to microcontroller (D32 Pro or D1 Mini).
-2. Position sensor on stem (width < 1 cm). On each plant, choose locations of similar height and stem width. Install each sensor in the same orientation (an “E” shape) and facing the same direction.
+2. Position sensor on stem (width < 1 cm). On each plant, choose locations of similar height and stem width. Install each sensor in the same orientation (an “3” shape) and facing the same direction.
 3. Use tape to secure the sensor’s straight edge on the stem. The nodes should press firmly against the stem’s surface. 
 4. Use 2 twist-ties to tighten and secure the sensor’s hold.
 5. When secure in place, wrap piece of bubble wrap around the stem and tape in place. This helps buffer air temperature.
 6. Wrap aluminum foil around the bubble wrap and tape in place. This helps buffer light; ensure there are no holes or openings where light can enter. 
 
 
-   <img src="/docs/SensorInstall1.png" width=205> <img src="/docs/SensorInstall2.png" width=205> <img src="/docs/SensorInstall3.png" width=205> <img src="/docs/SensorInstall4.png" width=205>
+   <img src="/docs/InstallationSensor1.png" width=205> <img src="/docs/InstallationSensor2.png" width=205> <img src="/docs/InstallationSensor3.png" width=205> <img src="/docs/InstallationSensor4.png" width=205>
 
 
 # Checklist for D32 Pro
