@@ -2,26 +2,27 @@
 
 ## Materials: 
 * Sensor
-* Tape
+* Tape or parafilm
 * 2 Twist-ties
-* Bubble wrap (~ 5 x 12 cm)
+* Bubble wrap or styrofoam (~ 5 x 12 cm)
 * Aluminum foil (~ 5 x 12 cm)
 
 <img src="/docs/InstallationMaterials.png" width=600>
 
 ## Directions:
 1. Connect sensor to microcontroller (D32 Pro or D1 Mini).
-2. Position sensor on stem (width < 1 cm). On each plant, choose locations of similar height and stem width. Install each sensor in the same orientation (an “3” shape) and facing the same direction.
-3. Use tape to secure the sensor’s straight edge on the stem. The nodes should press firmly against the stem’s surface. 
+2. Position sensor on stem (width < 1 cm). On each plant, choose locations of similar height and stem width. Install each sensor in the same orientation (a “3” shape, with "Temp 1" on top and "Temp 2" on bottom) and facing the same direction.
+3. Use tape or parafilm to secure the sensor’s straight edge on the stem. The nodes should press firmly against the stem’s surface. 
 4. Use 2 twist-ties to tighten and secure the sensor’s hold.
-5. When secure in place, wrap piece of bubble wrap around the stem and tape in place. This helps buffer air temperature.
+5. When secure in place, wrap piece of bubble wrap or styrofoam around the stem and tape in place. This helps buffer air temperature.
 6. Wrap aluminum foil around the bubble wrap and tape in place. This helps buffer light; ensure there are no holes or openings where light can enter. 
 
 
    <img src="/docs/InstallationSensor1.png" width=205> <img src="/docs/InstallationSensor2.png" width=205> <img src="/docs/InstallationSensor3.png" width=205> <img src="/docs/InstallationSensor4.png" width=205>
 
 
-# Checklist for D32 Pro
+
+# Checklist for D32 Pro (WiFi)
 
 ## Board: [Arduino-ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
 - [ ] Connect microcontroller via USB.
@@ -29,7 +30,35 @@
 - [ ] Open Boards Manager, search "esp32" and install. (Tools > Board > Boards Manager)
 - [ ] Switch board to LOLIN D32 PRO. (Tools > Board)
 
-## Dependencies:
+## Install dependencies:
+- [ ] In Library Manager, search and install the following libraries (Tools > Manage Libraries):
+    - [Adafruit GFX](https://github.com/adafruit/Adafruit-GFX-Library)
+    - [ArduinoJSON](https://arduinojson.org/) by Benoit Blanchon
+    - [ESP_DoubleResetDetector](https://github.com/khoih-prog/ESP_DoubleResetDetector) by Khoi Hoang
+    - [ESP_WiFiManager](https://github.com/khoih-prog/ESP_WiFiManager) by Khoi Hoang
+    - [HDC2080 Arduino Library](https://github.com/lime-labs/HDC2080-Arduino) by Lime Labs
+    - [PubSubClient](https://pubsubclient.knolleary.net/) by Nick O'Leary
+    - [RTC by Makuna](https://github.com/Makuna/Rtc/wiki) by Michael C. Miller
+    - [Time](https://playground.arduino.cc/code/time/) by Michael Margolis
+- [ ] These optional libraries can be downloaded online and copied to Arduino Libraries folder in Finder. Comment out applicable lines in code if unused. (In Finder, Arduino > libraries)
+    - [LOLIN E-Paper Display Library](https://github.com/wemos/LOLIN_EPD_Library)
+    - [WEMOS SHT3x Arduino Library](https://github.com/wemos/WEMOS_SHT3x_Arduino_Library)
+- [ ] NOTE: For PubSubClient, edit PubSubClient.h increase max packet size from **128b to 32768b**.
+(In Finder, Arduino > libraries > PubSubClient > src > PubSubClient.h > Edit “#define MQTT_MAX_PACKET_SIZE 32768")
+
+## Network settings:
+
+
+
+# Checklist for D32 Pro (Raspberry Pi)
+
+## Board: [Arduino-ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
+- [ ] Connect microcontroller via USB.
+- [ ] In Arduino, open Preferences and copy release link to Additional Boards Manager URLs. Separate multiple URLs with commas. (Files > Preferences)
+- [ ] Open Boards Manager, search "esp32" and install. (Tools > Board > Boards Manager)
+- [ ] Switch board to LOLIN D32 PRO. (Tools > Board)
+
+## Install dependencies:
 - [ ] In Library Manager, search and install the following libraries (Tools > Manage Libraries):
     - [Adafruit GFX](https://github.com/adafruit/Adafruit-GFX-Library)
     - [ArduinoJSON](https://arduinojson.org/) by Benoit Blanchon
@@ -39,7 +68,7 @@
 - [ ] These optional libraries can be downloaded online and copied to Arduino Libraries folder in Finder. Comment out applicable lines in code if unused. (In Finder, Arduino > libraries)
     - [LOLIN E-Paper Display Library](https://github.com/wemos/LOLIN_EPD_Library)
     - [WEMOS SHT3x Arduino Library](https://github.com/wemos/WEMOS_SHT3x_Arduino_Library)
-- [ ] NOTE: For PubSubClient, edit PubSubClient.h increase max packet size from 128b to 512b.
+- [ ] NOTE: For PubSubClient, edit PubSubClient.h increase max packet size from **128b to 512b**.
 (In Finder, Arduino > libraries > PubSubClient > src > PubSubClient.h > Edit “#define MQTT_MAX_PACKET_SIZE 512”)
 
 ## Network settings:
@@ -56,8 +85,6 @@
 
 
 
-
-
 # Checklist for D1 Mini
 
 ## Board: [Arduino-ESP8266](https://github.com/esp8266/Arduino)
@@ -66,7 +93,7 @@
 - [ ] Open Boards Manager, search "esp8266" and install. (Tools > Board > Boards Manager)
 - [ ] Switch board to LOLIN (WEMOS) D1 mini Lite. (Tools > Board)
 
-## Dependencies:
+## Install dependencies:
 - [ ] In Library Manager, search and install the following libraries (Tools > Manage Libraries):
     - [ArduinoJSON](https://arduinojson.org/) by Benoit Blanchon
     - [HDC2080 Arduino Library](https://github.com/lime-labs/HDC2080-Arduino) by Lime Labs
@@ -74,7 +101,7 @@
     - [WiFi Manager](https://github.com/tzapu/WiFiManager) by Tzapu
 - [ ] This optional library can be downloaded online and copied to Arduino Libraries folder in Finder. Comment out applicable lines in code if unused. (In Finder, Arduino > libraries)
     - [WEMOS SHT3x Arduino Library](https://github.com/wemos/WEMOS_SHT3x_Arduino_Library)
-- [ ] NOTE: For PubSubClient, edit PubSubClient.h increase max packet size from 128b to 512b.
+- [ ] NOTE: For PubSubClient, edit PubSubClient.h increase max packet size from **128b to 512b**.
 (In Finder, Arduino > libraries > PubSubClient > src > PubSubClient.h > Edit “#define MQTT_MAX_PACKET_SIZE 512”)
 
 ## Network settings:
