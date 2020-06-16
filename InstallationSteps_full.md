@@ -72,8 +72,8 @@
     
 ### Check:
 - [ ] Operating modes:
-    - Normal: If microcontroller is successfully connected to the network, the blue LED will be solid only during the heat pulse. Data will be both recorded to the MicroSD card and uploaded online through the dashboard.
-    - Offline: If microcontroller is in offline mode, the blue LED will blink continuously (~1 blink/second). Data will only be recorded to the MicroSD card.
+    - **Normal:** If microcontroller is successfully connected to the network, the blue LED will be solid only during the heat pulse. Data will be both recorded to the MicroSD card and uploaded online through the dashboard.
+    - **Offline:** If microcontroller is in offline mode, the blue LED will blink continuously (~1 blink/second). Data will only be recorded to the MicroSD card.
 - [ ] Sign into the [Sapflow Dashboard](https://www.dotmote.com/) to check that data is uploading.
 
 
