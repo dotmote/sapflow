@@ -1,4 +1,4 @@
-## Installation Steps
+# Installation Steps
 1. [Sensor Installation](#sensorinstallation)
 2. [Checklist for D32 Pro (WiFi)](#d32wifi)
 3. [Checklist for D32 Pro (Raspberry Pi)](#d32pi)
