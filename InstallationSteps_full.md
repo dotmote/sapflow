@@ -21,7 +21,7 @@
 
 ### Directions:
 1. Connect sensor to microcontroller (D32 Pro or D1 Mini).
-2. Position sensor on stem (width < 1 cm). On each plant, choose locations of similar height and stem width. Install each sensor facing the same direction and in the same vertical orientation, noting `Temp 1` on the top and `Temp 2` on the bottom (a "3" shape). 
+2. Position sensor on stem (width < 1 cm). On each plant, choose locations of similar height and stem width. Install each sensor facing the same direction and in the same vertical orientation, noting **Temp 1** on the top and **Temp 2** on the bottom (a "3" shape). 
 3. Use tape or parafilm to secure the sensor’s straight edge on the stem. The nodes should press firmly against the stem’s surface. 
 4. Use 2 twist-ties to tighten and secure the sensor’s hold.
 5. When secure in place, wrap piece of bubble wrap or styrofoam around the stem and tape in place. This helps buffer air temperature.
@@ -56,7 +56,7 @@
     - [LOLIN E-Paper Display Library](https://github.com/wemos/LOLIN_EPD_Library)
     - [WEMOS SHT3x Arduino Library](https://github.com/wemos/WEMOS_SHT3x_Arduino_Library)
 - [ ] NOTE: For PubSubClient, edit PubSubClient.h increase max packet size from **128b to 32768b**.
-(In Finder, Arduino > libraries > PubSubClient > src > PubSubClient.h > Edit “#define MQTT_MAX_PACKET_SIZE 32768")
+(In Finder, Arduino > libraries > PubSubClient > src > PubSubClient.h > Edit **“#define MQTT_MAX_PACKET_SIZE 32768"**)
 
 ### Network settings:
 - [ ] Open [D32 Pro script (WiFi)](https://github.com/dotmote/sapflow-usda-6/blob/master/sapflow-usda-6.ino) in Arduino.
@@ -100,7 +100,7 @@
     - [LOLIN E-Paper Display Library](https://github.com/wemos/LOLIN_EPD_Library)
     - [WEMOS SHT3x Arduino Library](https://github.com/wemos/WEMOS_SHT3x_Arduino_Library)
 - [ ] NOTE: For PubSubClient, edit PubSubClient.h increase max packet size from **128b to 512b**.
-(In Finder, Arduino > libraries > PubSubClient > src > PubSubClient.h > Edit “#define MQTT_MAX_PACKET_SIZE 512”)
+(In Finder, Arduino > libraries > PubSubClient > src > PubSubClient.h > Edit **“#define MQTT_MAX_PACKET_SIZE 512”**)
 
 ### Network settings:
 - [ ] Open [D32 Pro script (Pi)](https://github.com/dotmote/sapflow/blob/master/software/microcontroller/d32_pro/d32_pro_sapflow_mqtt_sd/d32_pro_sapflow_mqtt_sd.ino) in Arduino. (If microcontroller doesn't have an RTC chip, open [D32 Pro script (no RTC)](https://github.com/dotmote/sapflow/blob/master/software/microcontroller/d32_pro/d32_pro_sapflow_mqtt_noRtc/d32_pro_sapflow_mqtt_noRtc.ino).)
@@ -135,7 +135,7 @@
 - [ ] This optional library can be downloaded online and copied to Arduino Libraries folder in Finder. Comment out applicable lines in script if unused. (In Finder, Arduino > libraries)
     - [WEMOS SHT3x Arduino Library](https://github.com/wemos/WEMOS_SHT3x_Arduino_Library)
 - [ ] NOTE: For PubSubClient, edit PubSubClient.h increase max packet size from **128b to 512b**.
-(In Finder, Arduino > libraries > PubSubClient > src > PubSubClient.h > Edit “#define MQTT_MAX_PACKET_SIZE 512”)
+(In Finder, Arduino > libraries > PubSubClient > src > PubSubClient.h > Edit **“#define MQTT_MAX_PACKET_SIZE 512”**)
 
 ### Network settings:
 - [ ] Open [D1 Mini script](https://github.com/dotmote/sapflow/blob/master/software/microcontroller/d1_mini/d1_mini_sapflow_mqtt/d1_hdc2080_sapflow_mqtt.ino) in Arduino. 
