@@ -1,4 +1,4 @@
-# Installation Steps
+## Installation Steps
 1. [Sensor Installation](#sensorinstallation)
 2. [Checklist for D32 Pro (WiFi)](#d32wifi)
 3. [Checklist for D32 Pro (Raspberry Pi)](#d32pi)
@@ -7,9 +7,9 @@
 
 -------------------------------
 
-# Sensor Installation <a name="sensorinstallation"></a>
+## Sensor Installation <a name="sensorinstallation"></a>
 
-## Materials: 
+### Materials: 
 * Sensor
 * Tape or parafilm
 * 2 Twist-ties
@@ -18,7 +18,7 @@
 
 <img src="/docs/InstallationMaterials.png" width=600>
 
-## Directions:
+### Directions:
 1. Connect sensor to microcontroller (D32 Pro or D1 Mini).
 2. Position sensor on stem (width < 1 cm). On each plant, choose locations of similar height and stem width. Install each sensor facing the same direction and in the same vertical orientation, noting `Temp 1` on the top and `Temp 2` on the bottom (a "3" shape). 
 3. Use tape or parafilm to secure the sensor’s straight edge on the stem. The nodes should press firmly against the stem’s surface. 
@@ -30,16 +30,17 @@
    <img src="/docs/InstallationSensor1.png" width=205> <img src="/docs/InstallationSensor2.png" width=205> <img src="/docs/InstallationSensor3.png" width=205> <img src="/docs/InstallationSensor4.png" width=205>
 
 
+-------------------------------
 
-# Checklist for D32 Pro (WiFi) <a name="d32wifi"></a>
+## Checklist for D32 Pro (WiFi) <a name="d32wifi"></a>
 
-## Board: [Arduino-ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
+### Board: [Arduino-ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
 - [ ] Connect microcontroller via USB.
 - [ ] In Arduino, open Preferences and copy release link to Additional Boards Manager URLs. Separate multiple URLs with commas. (Files > Preferences)
 - [ ] Open Boards Manager, search "esp32" and install. (Tools > Board > Boards Manager)
 - [ ] Switch board to LOLIN D32 PRO. (Tools > Board)
 
-## Install dependencies:
+### Install dependencies:
 - [ ] In Library Manager, search and install the following libraries (Tools > Manage Libraries):
     - [Adafruit GFX](https://github.com/adafruit/Adafruit-GFX-Library)
     - [ArduinoJSON](https://arduinojson.org/) by Benoit Blanchon
@@ -55,7 +56,7 @@
 - [ ] NOTE: For PubSubClient, edit PubSubClient.h increase max packet size from **128b to 32768b**.
 (In Finder, Arduino > libraries > PubSubClient > src > PubSubClient.h > Edit “#define MQTT_MAX_PACKET_SIZE 32768")
 
-## Network settings:
+### Network settings:
 - [ ] Open [D32 Pro script (WiFi)](https://github.com/dotmote/sapflow-usda-6/blob/master/sapflow-usda-6.ino) in Arduino.
 - [ ] Verify/Compile and Upload to microcontroller via USB
 - [ ] Connect to WiFi: 
@@ -67,7 +68,7 @@
     - If "SAPFLOW_<unique_chip_id>" network does not appear, press and hold Reset button on microcontroller for 5 seconds. 
     - The microcontroller might reset itself while attempting to connect to the network.
     
-## Check:
+### Check:
 - [ ] Operating modes:
     - Normal: If microcontroller is successfully connected to the network, the blue LED will be solid only during the heat pulse. Data will be both recorded to the MicroSD card and uploaded online through the dashboard.
     - Offline: If microcontroller is in offline mode, the blue LED will blink continuously (~1 blink/second). Data will only be recorded to the MicroSD card.
@@ -75,16 +76,17 @@
 
 
 
+-------------------------------
 
-# Checklist for D32 Pro (Raspberry Pi) <a name="d32pi"></a>
+## Checklist for D32 Pro (Raspberry Pi) <a name="d32pi"></a>
 
-## Board: [Arduino-ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
+### Board: [Arduino-ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
 - [ ] Connect microcontroller via USB.
 - [ ] In Arduino, open Preferences and copy release link to Additional Boards Manager URLs. Separate multiple URLs with commas. (Files > Preferences)
 - [ ] Open Boards Manager, search "esp32" and install. (Tools > Board > Boards Manager)
 - [ ] Switch board to LOLIN D32 PRO. (Tools > Board)
 
-## Install dependencies:
+### Install dependencies:
 - [ ] In Library Manager, search and install the following libraries (Tools > Manage Libraries):
     - [Adafruit GFX](https://github.com/adafruit/Adafruit-GFX-Library)
     - [ArduinoJSON](https://arduinojson.org/) by Benoit Blanchon
@@ -97,29 +99,30 @@
 - [ ] NOTE: For PubSubClient, edit PubSubClient.h increase max packet size from **128b to 512b**.
 (In Finder, Arduino > libraries > PubSubClient > src > PubSubClient.h > Edit “#define MQTT_MAX_PACKET_SIZE 512”)
 
-## Network settings:
+### Network settings:
 - [ ] Open [D32 Pro script (Pi)](https://github.com/dotmote/sapflow/blob/master/software/microcontroller/d32_pro/d32_pro_sapflow_mqtt_sd/d32_pro_sapflow_mqtt_sd.ino) in Arduino. (If microcontroller doesn't have an RTC chip, open [D32 Pro script (no RTC)](https://github.com/dotmote/sapflow/blob/master/software/microcontroller/d32_pro/d32_pro_sapflow_mqtt_noRtc/d32_pro_sapflow_mqtt_noRtc.ino).)
 - [ ] ClientID: change `“clientID”`
 - [ ] Server/broker IP address: change `“mqtt_server”`
 - [ ] Connect to WiFi: enter `“wifi name”` and `“wifi password”`
 - [ ] Verify/Compile and Upload to microcontroller via USB
 
-## Check:
+### Check:
 - [ ] Open Serial Monitor and check that data is uploading. (Tools > Serial Monitor)
 - [ ] Check that Temperatures are not reading negative. If yes, try pressing Reset button on microcontroller several times.
 - [ ] Check that data is also transmitting on Raspberry Pi.
 
 
+-------------------------------
 
-# Checklist for D1 Mini <a name="d1mini"></a>
+## Checklist for D1 Mini <a name="d1mini"></a>
 
-## Board: [Arduino-ESP8266](https://github.com/esp8266/Arduino)
+### Board: [Arduino-ESP8266](https://github.com/esp8266/Arduino)
 - [ ] Connect microcontroller via USB.
 - [ ] In Arduino, open Preferences and copy release link (https://arduino.esp8266.com/stable/package_esp8266com_index.json) to Additional Boards Manager URLs. Separate multiple URLs with commas. (Files > Preferences)
 - [ ] Open Boards Manager, search "esp8266" and install. (Tools > Board > Boards Manager)
 - [ ] Switch board to LOLIN (WEMOS) D1 mini Lite. (Tools > Board)
 
-## Install dependencies:
+### Install dependencies:
 - [ ] In Library Manager, search and install the following libraries (Tools > Manage Libraries):
     - [ArduinoJSON](https://arduinojson.org/) by Benoit Blanchon
     - [HDC2080 Arduino Library](https://github.com/lime-labs/HDC2080-Arduino) by Lime Labs
@@ -130,7 +133,7 @@
 - [ ] NOTE: For PubSubClient, edit PubSubClient.h increase max packet size from **128b to 512b**.
 (In Finder, Arduino > libraries > PubSubClient > src > PubSubClient.h > Edit “#define MQTT_MAX_PACKET_SIZE 512”)
 
-## Network settings:
+### Network settings:
 - [ ] Open [D1 Mini script](https://github.com/dotmote/sapflow/blob/master/software/microcontroller/d1_mini/d1_mini_sapflow_mqtt/d1_hdc2080_sapflow_mqtt.ino) in Arduino. 
 - [ ] ClientID: change `“clientID”`
 - [ ] Server/broker IP address: change `“mqtt_server”`
@@ -146,7 +149,7 @@
     - "AutoConnectAP" network should now appear. Connect through phone.
     - In script, re-comment out `wifiManager.resetSettings();` to `//wifiManager.resetSettings();`. Re-upload to microcontroller.
 
-## Check:
+### Check:
 - [ ] Open Serial Monitor and check that data is uploading. (Tools > Serial Monitor)
 - [ ] Check that Temperatures are not reading negative. If yes, try pressing Reset button on microcontroller several times.
 - [ ] Check that data is also transmitting on Raspberry Pi.
