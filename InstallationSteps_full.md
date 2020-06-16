@@ -7,8 +7,8 @@
 
 -------------------------------
 
-<a href="#top">(Back to top)</a>
 ## Sensor Installation <a name="sensorinstallation"></a>                                                  
+<a href="#top">(Back to top)</a>
 
 ### Materials: 
 * Sensor
@@ -33,8 +33,8 @@
 
 -------------------------------
 
-<a href="#top">(Back to top)</a>
 ## Checklist for D32 Pro (WiFi) <a name="d32wifi"></a>
+<a href="#top">(Back to top)</a>
 
 ### Board: [Arduino-ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
 - [ ] Connect microcontroller via USB.
@@ -80,8 +80,8 @@
 
 -------------------------------
 
-<a href="#top">(Back to top)</a>
 ## Checklist for D32 Pro (Raspberry Pi) <a name="d32pi"></a>
+<a href="#top">(Back to top)</a>
 
 ### Board: [Arduino-ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
 - [ ] Connect microcontroller via USB.
@@ -117,8 +117,8 @@
 
 -------------------------------
 
-<a href="#top">(Back to top)</a>
 ## Checklist for D1 Mini <a name="d1mini"></a>
+<a href="#top">(Back to top)</a>
 
 ### Board: [Arduino-ESP8266](https://github.com/esp8266/Arduino)
 - [ ] Connect microcontroller via USB.
