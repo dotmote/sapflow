@@ -37,7 +37,7 @@
 ### Board: [Arduino-ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
 - [ ] Connect microcontroller via USB.
 - [ ] In Arduino, open Preferences and copy release link to Additional Boards Manager URLs. Separate multiple URLs with commas. (Files > Preferences)
-- [ ] Open Boards Manager, search "esp32" and install. (Tools > Board > Boards Manager)
+- [ ] Open Boards Manager, search **"esp32"** and install. (Tools > Board > Boards Manager)
 - [ ] Switch board to LOLIN D32 PRO. (Tools > Board)
 
 ### Install dependencies:
@@ -60,9 +60,9 @@
 - [ ] Open [D32 Pro script (WiFi)](https://github.com/dotmote/sapflow-usda-6/blob/master/sapflow-usda-6.ino) in Arduino.
 - [ ] Verify/Compile and Upload to microcontroller via USB
 - [ ] Connect to WiFi: 
-    - On phone or computer, select WiFi network “SAPFLOW_<unique_chip_id>”. 
-    - On next screen, select “Configuration”.
-    - Select WiFi network, enter password, and select "Save".
+    - On phone or computer, select WiFi network **“SAPFLOW_<unique_chip_id>”**. 
+    - On next screen, select **“Configuration”**.
+    - Select WiFi network, enter password, and select **"Save"**.
     - Wait to connect. “SAPFLOW_<unique_chip_id>” will disappear from network list when complete.
 - [ ] NOTES:
     - If "SAPFLOW_<unique_chip_id>" network does not appear, press and hold Reset button on microcontroller for 5 seconds. 
@@ -83,7 +83,7 @@
 ### Board: [Arduino-ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
 - [ ] Connect microcontroller via USB.
 - [ ] In Arduino, open Preferences and copy release link to Additional Boards Manager URLs. Separate multiple URLs with commas. (Files > Preferences)
-- [ ] Open Boards Manager, search "esp32" and install. (Tools > Board > Boards Manager)
+- [ ] Open Boards Manager, search **"esp32"** and install. (Tools > Board > Boards Manager)
 - [ ] Switch board to LOLIN D32 PRO. (Tools > Board)
 
 ### Install dependencies:
@@ -119,7 +119,7 @@
 ### Board: [Arduino-ESP8266](https://github.com/esp8266/Arduino)
 - [ ] Connect microcontroller via USB.
 - [ ] In Arduino, open Preferences and copy release link (https://arduino.esp8266.com/stable/package_esp8266com_index.json) to Additional Boards Manager URLs. Separate multiple URLs with commas. (Files > Preferences)
-- [ ] Open Boards Manager, search "esp8266" and install. (Tools > Board > Boards Manager)
+- [ ] Open Boards Manager, search **"esp8266"** and install. (Tools > Board > Boards Manager)
 - [ ] Switch board to LOLIN (WEMOS) D1 mini Lite. (Tools > Board)
 
 ### Install dependencies:
@@ -139,9 +139,9 @@
 - [ ] Server/broker IP address: change `“mqtt_server”`
 - [ ] Verify/Compile and Upload to microcontroller via USB
 - [ ] Connect to WiFi: 
-    - On phone, select WiFi network “AutoConnectAP”. 
-    - On next screen, select “Configure WiFi”.
-    - Select WiFi network, enter password, and select "Save".
+    - On phone, select WiFi network **“AutoConnectAP”**. 
+    - On next screen, select **“Configure WiFi”**.
+    - Select WiFi network, enter password, and select **"Save"**.
     - Wait to connect. “AutoConnectAP” will disappear from network list when complete.
 - [ ] NOTE: If "AutoConnectAP" network does not appear:
     - Press and hold Reset button on microcontroller for 5 seconds. 
