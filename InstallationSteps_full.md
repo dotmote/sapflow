@@ -40,7 +40,7 @@
 - [ ] Connect microcontroller via USB.
 - [ ] In Arduino, open Preferences and copy release link to Additional Boards Manager URLs. Separate multiple URLs with commas. (Files > Preferences)
 - [ ] Open Boards Manager, search **"esp32"** and install. (Tools > Board > Boards Manager)
-- [ ] Switch board to LOLIN D32 PRO. (Tools > Board)
+- [ ] Switch board to **LOLIN D32 PRO**. (Tools > Board)
 
 ### Install dependencies:
 - [ ] In Library Manager, search and install the following libraries (Tools > Manage Libraries):
@@ -87,7 +87,7 @@
 - [ ] Connect microcontroller via USB.
 - [ ] In Arduino, open Preferences and copy release link to Additional Boards Manager URLs. Separate multiple URLs with commas. (Files > Preferences)
 - [ ] Open Boards Manager, search **"esp32"** and install. (Tools > Board > Boards Manager)
-- [ ] Switch board to LOLIN D32 PRO. (Tools > Board)
+- [ ] Switch board to **LOLIN D32 PRO**. (Tools > Board)
 
 ### Install dependencies:
 - [ ] In Library Manager, search and install the following libraries (Tools > Manage Libraries):
@@ -124,7 +124,7 @@
 - [ ] Connect microcontroller via USB.
 - [ ] In Arduino, open Preferences and copy release link (https://arduino.esp8266.com/stable/package_esp8266com_index.json) to Additional Boards Manager URLs. Separate multiple URLs with commas. (Files > Preferences)
 - [ ] Open Boards Manager, search **"esp8266"** and install. (Tools > Board > Boards Manager)
-- [ ] Switch board to LOLIN (WEMOS) D1 mini Lite. (Tools > Board)
+- [ ] Switch board to **LOLIN (WEMOS) D1 mini Lite**. (Tools > Board)
 
 ### Install dependencies:
 - [ ] In Library Manager, search and install the following libraries (Tools > Manage Libraries):
