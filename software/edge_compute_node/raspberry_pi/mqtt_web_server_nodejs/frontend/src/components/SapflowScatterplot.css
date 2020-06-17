@@ -1,0 +1,19 @@
+.axis-label {
+  font-size: 10px;
+}
+
+.tooltip-content {
+  background: white;
+  position: relative;
+  border: 1px solid #ddd;
+  color: black;
+  padding: 10px;
+  z-index: 100;
+  transform: translateX(-50%) translateY(5px);
+  min-width: 120px;
+}
+
+circle.frame-hover {
+  stroke-width: 2;
+  r: 5;
+}

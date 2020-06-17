@@ -7,8 +7,9 @@
 
 -------------------------------
 
-## Sensor Installation <a name="sensorinstallation"></a>                                                  
-<a href="#top">(Back to top)</a>
+<a href="#top">(Back to top)</a> <a name="sensorinstallation"></a> 
+
+## Sensor Installation                                                  
 
 ### Materials: 
 * Sensor
@@ -33,8 +34,10 @@
 
 -------------------------------
 
-## Checklist for D32 Pro (WiFi) <a name="d32wifi"></a>
-<a href="#top">(Back to top)</a>
+<a href="#top">(Back to top)</a> <a name="d32wifi"></a>
+
+## Checklist for D32 Pro (WiFi) 
+
 
 ### Board: [Arduino-ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
 - [ ] Connect microcontroller via USB.
@@ -80,8 +83,10 @@
 
 -------------------------------
 
-## Checklist for D32 Pro (Raspberry Pi) <a name="d32pi"></a>
-<a href="#top">(Back to top)</a>
+<a href="#top">(Back to top)</a> <a name="d32pi"></a>
+
+## Checklist for D32 Pro (Raspberry Pi) 
+
 
 ### Board: [Arduino-ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
 - [ ] Connect microcontroller via USB.
@@ -117,8 +122,10 @@
 
 -------------------------------
 
-## Checklist for D1 Mini <a name="d1mini"></a>
-<a href="#top">(Back to top)</a>
+<a href="#top">(Back to top)</a> <a name="d1mini"></a>
+
+## Checklist for D1 Mini 
+
 
 ### Board: [Arduino-ESP8266](https://github.com/esp8266/Arduino)
 - [ ] Connect microcontroller via USB.
