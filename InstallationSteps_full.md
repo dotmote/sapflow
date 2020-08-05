@@ -70,7 +70,8 @@
     - Select WiFi network, enter password, and select **"Save"**.
     - Wait to connect. “SAPFLOW_<unique_chip_id>” will disappear from network list when complete.
 - [ ] NOTES:
-    - If "SAPFLOW_<unique_chip_id>" network does not appear, press and hold Reset button on microcontroller for 5 seconds. 
+    - Once connected, the "SAPFLOW_<unique_chip_id>" network will not reappear when reconnecting to the same network. 
+    - If "SAPFLOW_<unique_chip_id>" network does not appear for initial connection, press and hold Reset button on microcontroller for 5 seconds. 
     - The microcontroller might reset itself while attempting to connect to the network.
     
 ### Check:
@@ -155,6 +156,7 @@
     - Select WiFi network, enter password, and select **"Save"**.
     - Wait to connect. “AutoConnectAP” will disappear from network list when complete.
 - [ ] NOTE: If "AutoConnectAP" network does not appear:
+    - Once connected, it will not reappear when reconnecting to the same network.
     - Press and hold Reset button on microcontroller for 5 seconds. 
     - In script, activate `//wifiManager.resetSettings();` to `wifiManager.resetSettings();`. Upload to microcontroller.
     - "AutoConnectAP" network should now appear. Connect through phone.
