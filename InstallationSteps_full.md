@@ -58,8 +58,6 @@
 - [ ] These optional libraries can be downloaded online and copied to Arduino Libraries folder in Finder. Comment out applicable lines in script if unused. (In Finder, Arduino > libraries)
     - [LOLIN E-Paper Display Library](https://github.com/wemos/LOLIN_EPD_Library)
     - [WEMOS SHT3x Arduino Library](https://github.com/wemos/WEMOS_SHT3x_Arduino_Library)
-- [ ] NOTE: For PubSubClient, edit PubSubClient.h increase max packet size from **128b to 32768b**.
-(In Finder, Arduino > libraries > PubSubClient > src > PubSubClient.h > Edit **“#define MQTT_MAX_PACKET_SIZE 32768"**)
 
 ### Network settings:
 - [ ] Open [D32 Pro script (WiFi)](https://github.com/dotmote/sapflow-usda-6/blob/master/sapflow-usda-6.ino) in Arduino.
