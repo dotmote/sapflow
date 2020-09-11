@@ -7,8 +7,9 @@
 
 -------------------------------
 
-## Sensor Installation <a name="sensorinstallation"></a>                                                  
-<a href="#top">(Back to top)</a>
+<a href="#top">(Back to top)</a> <a name="sensorinstallation"></a> 
+
+## Sensor Installation                                                  
 
 ### Materials: 
 * Sensor
@@ -33,8 +34,10 @@
 
 -------------------------------
 
-## Checklist for D32 Pro (WiFi) <a name="d32wifi"></a>
-<a href="#top">(Back to top)</a>
+<a href="#top">(Back to top)</a> <a name="d32wifi"></a>
+
+## Checklist for D32 Pro (WiFi) 
+
 
 ### Board: [Arduino-ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
 - [ ] Connect microcontroller via USB.
@@ -55,8 +58,6 @@
 - [ ] These optional libraries can be downloaded online and copied to Arduino Libraries folder in Finder. Comment out applicable lines in script if unused. (In Finder, Arduino > libraries)
     - [LOLIN E-Paper Display Library](https://github.com/wemos/LOLIN_EPD_Library)
     - [WEMOS SHT3x Arduino Library](https://github.com/wemos/WEMOS_SHT3x_Arduino_Library)
-- [ ] NOTE: For PubSubClient, edit PubSubClient.h increase max packet size from **128b to 32768b**.
-(In Finder, Arduino > libraries > PubSubClient > src > PubSubClient.h > Edit **“#define MQTT_MAX_PACKET_SIZE 32768"**)
 
 ### Network settings:
 - [ ] Open [D32 Pro script (WiFi)](https://github.com/dotmote/sapflow-usda-6/blob/master/sapflow-usda-6.ino) in Arduino.
@@ -67,7 +68,8 @@
     - Select WiFi network, enter password, and select **"Save"**.
     - Wait to connect. “SAPFLOW_<unique_chip_id>” will disappear from network list when complete.
 - [ ] NOTES:
-    - If "SAPFLOW_<unique_chip_id>" network does not appear, press and hold Reset button on microcontroller for 5 seconds. 
+    - Once connected, the "SAPFLOW_<unique_chip_id>" network will not reappear when reconnecting to the same network. 
+    - If "SAPFLOW_<unique_chip_id>" network does not appear for initial connection, press and hold Reset button on microcontroller for 5 seconds. 
     - The microcontroller might reset itself while attempting to connect to the network.
     
 ### Check:
@@ -80,8 +82,10 @@
 
 -------------------------------
 
-## Checklist for D32 Pro (Raspberry Pi) <a name="d32pi"></a>
-<a href="#top">(Back to top)</a>
+<a href="#top">(Back to top)</a> <a name="d32pi"></a>
+
+## Checklist for D32 Pro (Raspberry Pi) 
+
 
 ### Board: [Arduino-ESP32](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/boards_manager.md)
 - [ ] Connect microcontroller via USB.
@@ -117,8 +121,10 @@
 
 -------------------------------
 
-## Checklist for D1 Mini <a name="d1mini"></a>
-<a href="#top">(Back to top)</a>
+<a href="#top">(Back to top)</a> <a name="d1mini"></a>
+
+## Checklist for D1 Mini 
+
 
 ### Board: [Arduino-ESP8266](https://github.com/esp8266/Arduino)
 - [ ] Connect microcontroller via USB.
@@ -148,6 +154,7 @@
     - Select WiFi network, enter password, and select **"Save"**.
     - Wait to connect. “AutoConnectAP” will disappear from network list when complete.
 - [ ] NOTE: If "AutoConnectAP" network does not appear:
+    - Once connected, it will not reappear when reconnecting to the same network.
     - Press and hold Reset button on microcontroller for 5 seconds. 
     - In script, activate `//wifiManager.resetSettings();` to `wifiManager.resetSettings();`. Upload to microcontroller.
     - "AutoConnectAP" network should now appear. Connect through phone.
