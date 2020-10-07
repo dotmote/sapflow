@@ -22,7 +22,7 @@
 
 ### Directions:
 1. Connect sensor to microcontroller (D32 Pro or D1 Mini).
-2. Position sensor on stem (width < 1 cm). On each plant, choose locations of similar height and stem width. Install each sensor facing the same direction and in the same vertical orientation, noting **Temp 1** on the top and **Temp 2** on the bottom (a "3" shape). 
+2. Position sensor on stem (width < 1 cm). On each plant, choose locations of similar height and stem width. Install each sensor facing the same direction and in the same vertical orientation, noting **Temp 1** on the bottom and **Temp 2** on the top (an "E" shape). 
 3. Use tape or parafilm to secure the sensor’s straight edge on the stem. The nodes should press firmly against the stem’s surface. 
 4. Use 2 twist-ties to tighten and secure the sensor’s hold.
 5. When secure in place, wrap piece of bubble wrap or styrofoam around the stem and tape in place. This helps buffer air temperature.
