@@ -1,0 +1,277 @@
+---
+title: "Sapflow"
+author: "Aji John"
+date: "12/16/2020"
+output: html_document
+---
+
+# Running notebook for the Sapflow data captured by Sapflow nodes (DotmoteLabs)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction 
+
+Sapflow measurements help with tree water use that can be exteded to canopy level transpiration assessments.
+
+```{r }
+library(knitr)
+library(tidyverse)
+library(lubridate)
+```
+
+## Load helper functions
+
+
+```{r setup, include=FALSE}
+## Summarizes data.
+## Gives count, mean, standard deviation, standard error of the mean, and confidence interval (default 95%).
+##   data: a data frame.
+##   measurevar: the name of a column that contains the variable to be summariezed
+##   groupvars: a vector containing names of columns that contain grouping variables
+##   na.rm: a boolean that indicates whether to ignore NA's
+##   conf.interval: the percent range of the confidence interval (default is 95%)
+summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
+                      conf.interval=.95, .drop=TRUE) {
+    library(plyr)
+
+    # New version of length which can handle NA's: if na.rm==T, don't count them
+    length2 <- function (x, na.rm=FALSE) {
+        if (na.rm) sum(!is.na(x))
+        else       length(x)
+    }
+
+    # This does the summary. For each group's data frame, return a vector with
+    # N, mean, and sd
+    datac <- ddply(data, groupvars, .drop=.drop,
+      .fun = function(xx, col) {
+        c(N    = length2(xx[[col]], na.rm=na.rm),
+          mean = mean   (xx[[col]], na.rm=na.rm),
+          sd   = sd     (xx[[col]], na.rm=na.rm)
+        )
+      },
+      measurevar
+    )
+
+    # Rename the "mean" column    
+    datac <- rename(datac, c("mean" = measurevar))
+
+    datac$se <- datac$sd / sqrt(datac$N)  # Calculate standard error of the mean
+
+    # Confidence interval multiplier for standard error
+    # Calculate t-statistic for confidence interval: 
+    # e.g., if conf.interval is .95, use .975 (above/below), and use df=N-1
+    ciMult <- qt(conf.interval/2 + .5, datac$N-1)
+    datac$ci <- datac$se * ciMult
+
+    return(datac)
+}
+```
+
+## Verify the input files
+
+
+```{r pressure, echo=FALSE}
+sapflow_sh_2020_2<-  read_csv('./data/sapflow-dotmote-labs-2_2020-10-07_to_2020-12-07.csv')
+
+# Tell R studio that timestamp is already in PST
+sapflow_sh_2020_2$dateP <- as_datetime(sapflow_sh_2020_2$timestamp, tz="America/Los_Angeles")
+
+sapflow_sh_2020_3<-  read_csv('./data/sapflow-dotmote-labs-3_2020-10-07_to_2020-12-07.csv')
+
+# Tell R studio that timestamp is already in PST
+sapflow_sh_2020_3$dateP <- as_datetime(sapflow_sh_2020_3$timestamp, tz="America/Los_Angeles")
+
+sapflow_sh_2020_4<-  read_csv('./data/sapflow-dotmote-labs-4_2020-10-07_to_2020-12-07.csv')
+
+# Tell R studio that timestamp is already in PST
+sapflow_sh_2020_4$dateP <- as_datetime(sapflow_sh_2020_4$timestamp, tz="America/Los_Angeles")
+
+sapflow_sh_2020_5<-  read_csv('./data/sapflow-dotmote-labs-5_2020-10-07_to_2020-12-07.csv')
+
+# Tell R studio that timestamp is already in PST
+sapflow_sh_2020_5$dateP <- as_datetime(sapflow_sh_2020_5$timestamp, tz="America/Los_Angeles")
+
+
+```
+
+## Run summary analysis
+
+```{r }
+sapflow_sh_2020 <-  rbind(sapflow_sh_2020_2,
+                          sapflow_sh_2020_3,
+                          sapflow_sh_2020_4,
+                          sapflow_sh_2020_5)
+
+  
+```
+
+## Plot the raw heat ratio data 
+
+```{r }
+sapflow_sh_2020 %>% mutate(meanhr = meanHeatRatio) %>%
+  filter(!meanhr =='NaN') %>% mutate(mr=as.numeric(meanhr)) %>%
+     mutate(node = as.factor(nodeId),Vh = log(mr),hr = hour(date)) %>%
+      filter(date(dateP) == "2020-12-01" ) %>%
+  #filter(nodeId %in% c("sapflow-dotmote-labs-2" ,"sapflow-dotmote-labs-3", "sapflow-dotmote-labs-4","sapflow-dotmote-labs-5")) %>%
+  ggplot() + geom_point(aes(dateP,mr,color=node) )  +
+  facet_grid(~node) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 2-5 SUH - WA ", caption="Source : dotmotelabs.com") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+```
+
+## Verify diurnal 
+
+
+## Do zero offsetting 
+
+Plot alternatively, but do offsetting by zeroing out the heatratio by using the values from hrs 0,1 and 2. Assumption being around hours (0-2), ideally no sapflow in plants.
+
+```{r , echo=FALSE}
+
+suh_2_offset <- sapflow_sh_2020 %>%  mutate(meanhr = meanHeatRatio,hr = hour(dateP)) %>%
+  filter(!meanhr =='NaN') %>% 
+  filter(nodeId %in% c("sapflow-dotmote-labs-2"))  %>% 
+  filter( hr %in% c(0,1,2)) %>% summarise(mhr = mean(meanhr))
+
+
+suh_3_offset <- sapflow_sh_2020 %>%  mutate(meanhr = meanHeatRatio,hr = hour(dateP)) %>%
+  filter(!meanhr =='NaN') %>% 
+  filter(nodeId %in% c("sapflow-dotmote-labs-3"))  %>%
+  filter( hr %in% c(0,1,2)) %>% summarise(mhr = mean(meanhr))
+
+suh_4_offset <- sapflow_sh_2020 %>%  mutate(meanhr = meanHeatRatio,hr = hour(dateP)) %>%
+  filter(!meanhr =='NaN') %>% 
+  filter(nodeId %in% c("sapflow-dotmote-labs-4"))  %>% 
+  filter( hr %in% c(0,1,2)) %>% summarise(mhr = mean(meanhr))
+
+
+suh_5_offset <- sapflow_sh_2020 %>%  mutate(meanhr = meanHeatRatio,hr = hour(dateP)) %>%
+  filter(!meanhr =='NaN') %>% 
+  filter(nodeId %in% c("sapflow-dotmote-labs-5"))  %>%
+  filter( hr %in% c(0,1,2)) %>% summarise(mhr = mean(meanhr))
+
+
+
+sapflow_sh_2020_adjusted <- sapflow_sh_2020
+sapflow_sh_2020_adjusted$hr = hour(sapflow_sh_2020$dateP)
+sapflow_sh_2020_adjusted$mr <- 0
+
+sapflow_sh_2020_adjusted[sapflow_sh_2020_adjusted$nodeId == "sapflow-dotmote-labs-2",]$mr =  sapflow_sh_2020_adjusted[sapflow_sh_2020$nodeId == "sapflow-dotmote-labs-2",]$meanHeatRatio + (1-as.numeric(suh_2_offset))
+
+sapflow_sh_2020_adjusted[sapflow_sh_2020_adjusted$nodeId == "sapflow-dotmote-labs-3",]$mr =  sapflow_sh_2020_adjusted[sapflow_sh_2020$nodeId == "sapflow-dotmote-labs-3",]$meanHeatRatio + (1-as.numeric(suh_3_offset))
+
+sapflow_sh_2020_adjusted[sapflow_sh_2020_adjusted$nodeId == "sapflow-dotmote-labs-4",]$mr =  sapflow_sh_2020_adjusted[sapflow_sh_2020$nodeId == "sapflow-dotmote-labs-4",]$meanHeatRatio + (1-as.numeric(suh_4_offset))
+
+sapflow_sh_2020_adjusted[sapflow_sh_2020_adjusted$nodeId == "sapflow-dotmote-labs-5",]$mr =  sapflow_sh_2020_adjusted[sapflow_sh_2020$nodeId == "sapflow-dotmote-labs-5",]$meanHeatRatio + (1-as.numeric(suh_5_offset))
+
+
+
+
+#SE 
+sapflow_sh_2020_adjusted_se <- summarySE(sapflow_sh_2020_adjusted, measurevar="mr", groupvars=c("nodeId","hr"))
+
+
+
+
+# TODO VPD SE
+
+
+```
+
+## Plot the adjusted with original 
+
+```{r , echo=FALSE}
+
+sapflow_sh_2020 %>% 
+  mutate(node = as.factor(nodeId),hr = hour(dateP)) %>%
+  mutate(mr = meanHeatRatio) %>%
+  ggplot() + geom_point(aes(hr,mr,color=node) )  +
+  facet_grid(~nodeId) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 2-5 SUH - WA  ", caption="Source : dotmotelabs.com") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+
+```
+
+```{r , echo=FALSE}
+
+sapflow_sh_2020_adjusted %>% 
+  mutate(node = as.factor(nodeId),hr = hour(dateP)) %>%
+  ggplot() + geom_point(aes(hr,mr,color=node) )  +
+  facet_grid(~nodeId) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 2-5 SUH - WA  ", caption="Source : dotmotelabs.com") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+
+```
+
+## Compare Original and Adjusted HR
+
+
+```{r , echo=FALSE}
+
+lm(sapflow_sh_2020_adjusted$meanHeatRatio~sapflow_sh_2020_adjusted$mr)
+
+sapflow_sh_2020_adjusted %>% 
+  ggplot() +
+  geom_point(aes(meanHeatRatio,mr,color=nodeId)) +
+  theme_minimal(base_size = 14)
+```
+
+## Heat pulse velocity
+
+```{r , echo=FALSE}
+
+sapflow_sh_2020_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+#        filter(date(dateP) == "2020-12-01" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=sv,color=nodeId)) +
+   geom_line(aes(x = dateP, y=sv,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  theme(legend.position = c(.17, 1))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
+
+
+## Mass flow
+
+
+```{r , echo=FALSE}
+
+sapflow_sh_2020_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+   mutate (vs =1.7 * sv )%>% 
+   mutate (flow = 3.14 * (1.5)^2 *vs )%>% 
+        filter(date(dateP) == "2020-12-01" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=flow,color=nodeId)) +
+   geom_line(aes(x = dateP, y=flow,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    #name = expression(~V[h] (cm~h^{"-1"}))
+       # Features of the first axis
+    name = expression("Sapflow rate"~J~(g~h^{"-1"})),
+  ) +
+  theme(legend.position = c(.17, 1))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
+
+## Map the patterns for Sunny days with Cloudy/Rainy Days - Use Agrimet. Use Sapflow velocity curves. Maybe above a threshold of 10 are viable days. 
