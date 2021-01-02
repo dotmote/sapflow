@@ -268,7 +268,7 @@ sapflow_sh_2020_adjusted %>%
        # Features of the first axis
     name = expression("Sapflow rate"~J~(g~h^{"-1"})),
   ) +
-  theme(legend.position = c(.17, 1))+
+  theme(legend.position = c(.17, .8))+
 guides(fill = guide_legend(keywidth = 1, keyheight = 1),
     linetype=guide_legend(keywidth = 3, keyheight = 1))
 

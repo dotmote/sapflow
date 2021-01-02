@@ -1,0 +1,33 @@
+---
+title: "R-Slim-HR"
+author: "Aji John"
+date: "4/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Load the packages
+
+```{r }
+library(tidyverse)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r , echo=FALSE}
+sample_fil <- read_csv('1_1563433200.csv')
+```
+
+```{r , echo=FALSE}
+sample_fil %>% ggplot() + 
+  #geom_point(aes(x=unix_timestamp,tc1),color='red') +
+  # geom_point(aes(x=unix_timestamp,tc2),color='blue') +
+  geom_point(aes(unix_timestamp,millisSinceHeatPulse),color='black')
+```
