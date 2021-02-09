@@ -239,12 +239,39 @@ sapflow_sh_2020_adjusted %>%
     name = expression(~V[h] (cm~h^{"-1"}))
 
   ) +
-  theme(legend.position = c(.17, 1))+
+  theme(legend.position = c(.17, .6))+
 guides(fill = guide_legend(keywidth = 1, keyheight = 1),
     linetype=guide_legend(keywidth = 3, keyheight = 1))
 
 ```
 
+## Heat pulse velocity 1 to 15
+
+```{r , echo=FALSE}
+
+sapflow_sh_2020_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+#        filter(date(dateP) == "2020-12-01" ) %>%
+          filter(date(dateP) >= "2020-11-22" ) %>%
+   filter(date(dateP) <= "2020-12-01" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=sv,color=nodeId)) +
+   geom_line(aes(x = dateP, y=sv,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  theme(legend.position = c(.17, .6))+
+    labs(color='Node ID',x="Time (Date)") +
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+ggsave("figs/stress-event.png", width = 20, height = 20, units = "cm")
+
+```
 
 ## Mass flow
 
@@ -269,9 +296,63 @@ sapflow_sh_2020_adjusted %>%
     name = expression("Sapflow rate"~J~(g~h^{"-1"})),
   ) +
   theme(legend.position = c(.17, .8))+
+  labs(color='Node ID',x="Time (Date)") +
 guides(fill = guide_legend(keywidth = 1, keyheight = 1),
     linetype=guide_legend(keywidth = 3, keyheight = 1))
 
 ```
 
 ## Map the patterns for Sunny days with Cloudy/Rainy Days - Use Agrimet. Use Sapflow velocity curves. Maybe above a threshold of 10 are viable days. 
+```{r , echo=FALSE}
+
+et<- read_csv('./data/AWN_Data_View_15_Chelan.csv')
+
+allhibis_sv <- sapflow_sh_2020_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>%
+  filter(hr %in% c(10:14)) %>%
+  group_by(daten) %>%
+  summarise_at(c("sv"), mean, na.rm = TRUE) %>% as.data.frame()
+
+et_ref <- et %>% mutate(Date = lubridate::as_date(Date),
+                        ETo_in = as.numeric(ETo_in),
+                        ETr_in  = as.numeric(ETr_in),
+                        Accu_ETo_in = as.numeric(Accu_ETo_in),
+                        Accu_ETr_in = as.numeric(Accu_ETr_in)) %>% as.data.frame()
+
+allhibis_sv_filtered <- allhibis_sv %>% filter(daten %in% c(unique(et_ref$Date)))
+
+et_ref_filtered <- et_ref %>% filter(Date %in% c(unique(allhibis_sv_filtered$daten)))
+```
+
+```{r , echo=FALSE}
+
+
+et_ref_filtered %>% ggplot() +
+  geom_point(aes(Date,ETr_in))
+```
+
+
+```{r , echo=FALSE}
+
+
+allhibis_sv_filtered %>% ggplot() +
+  geom_point(aes(daten,sv))
+```
+
+
+```{r , echo=FALSE}
+
+et_ref_filtered_ETR_in <- et_ref_filtered %>% group_by(Date) %>% 
+    summarise_at(c("ETr_in"), mean, na.rm = TRUE) %>% as.data.frame()
+```
+
+```{r , echo=FALSE}
+
+allhibis_sv_filtered$ETR_in <- et_ref_filtered_ETR_in$ETr_in
+allhibis_sv_filtered%>% ggplot() +
+geom_line(aes(daten,sv, color='sv')) +
+geom_line(aes(daten,ETR_in*50, color='etr'))   
+
+
+```
+
