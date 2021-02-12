@@ -305,11 +305,17 @@ guides(fill = guide_legend(keywidth = 1, keyheight = 1),
 ## Map the patterns for Sunny days with Cloudy/Rainy Days - Use Agrimet. Use Sapflow velocity curves. Maybe above a threshold of 10 are viable days. 
 ```{r , echo=FALSE}
 
-et<- read_csv('./data/AWN_Data_View_15_Chelan.csv')
+et<- read_csv('./data/AWN_Data_View_15_Seattle.csv')
 
 allhibis_sv <- sapflow_sh_2020_adjusted %>% 
   mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>%
   filter(hr %in% c(10:14)) %>%
+  group_by(daten) %>%
+  summarise_at(c("sv"), mean, na.rm = TRUE) %>% as.data.frame()
+
+allhibis_sv_all <- sapflow_sh_2020_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>%
+  #filter(hr %in% c(10:14)) %>%
   group_by(daten) %>%
   summarise_at(c("sv"), mean, na.rm = TRUE) %>% as.data.frame()
 
@@ -320,8 +326,10 @@ et_ref <- et %>% mutate(Date = lubridate::as_date(Date),
                         Accu_ETr_in = as.numeric(Accu_ETr_in)) %>% as.data.frame()
 
 allhibis_sv_filtered <- allhibis_sv %>% filter(daten %in% c(unique(et_ref$Date)))
+allhibis_sv_filtered_all <- allhibis_sv_all %>% filter(daten %in% c(unique(et_ref$Date)))
 
 et_ref_filtered <- et_ref %>% filter(Date %in% c(unique(allhibis_sv_filtered$daten)))
+et_ref_filtered_all <- et_ref %>% filter(Date %in% c(unique(allhibis_sv_filtered_all$daten)))
 ```
 
 ```{r , echo=FALSE}
@@ -343,12 +351,22 @@ allhibis_sv_filtered %>% ggplot() +
 ```{r , echo=FALSE}
 
 et_ref_filtered_ETR_in <- et_ref_filtered %>% group_by(Date) %>% 
-    summarise_at(c("ETr_in"), mean, na.rm = TRUE) %>% as.data.frame()
+    summarise_at(c("ETr_in","ETo_in","Accu_ETo_in"), mean, na.rm = TRUE) %>% as.data.frame()
+
+et_ref_filtered_ETR_in_all <- et_ref_filtered_all %>% group_by(Date) %>% 
+    summarise_at(c("ETr_in","ETo_in","Accu_ETo_in"), mean, na.rm = TRUE) %>% as.data.frame()
 ```
 
 ```{r , echo=FALSE}
 
 allhibis_sv_filtered$ETR_in <- et_ref_filtered_ETR_in$ETr_in
+allhibis_sv_filtered$ETo_in <- et_ref_filtered_ETR_in$ETo_in
+allhibis_sv_filtered$Accu_ETo_in <- et_ref_filtered_ETR_in$Accu_ETo_in
+
+allhibis_sv_filtered_all$ETR_in <- et_ref_filtered_ETR_in_all$ETr_in
+allhibis_sv_filtered_all$ETo_in <- et_ref_filtered_ETR_in_all$ETo_in
+allhibis_sv_filtered_all$Accu_ETo_in <- et_ref_filtered_ETR_in_all$Accu_ETo_in
+
 allhibis_sv_filtered%>% ggplot() +
 geom_line(aes(daten,sv, color='sv')) +
 geom_line(aes(daten,ETR_in*50, color='etr'))   
@@ -356,3 +374,58 @@ geom_line(aes(daten,ETR_in*50, color='etr'))
 
 ```
 
+# lm
+
+```{r , echo=FALSE}
+
+
+summary(lm(sv~Accu_ETo_in,data = allhibis_sv_filtered))
+allhibis_sv_filtered%>% ggplot() +
+geom_point(aes(sv,Accu_ETo_in))
+```
+
+# lm
+
+# lm
+
+```{r , echo=FALSE}
+
+
+summary(lm(sv~Accu_ETo_in,data = allhibis_sv_filtered_all))
+allhibis_sv_filtered_all%>% ggplot() +
+geom_line(aes(daten,sv,color="SF")) +
+  geom_line(aes(daten,ETR_in * 20,color="ETr")) +
+   geom_line(aes(daten,ETo_in * 20,color="ETo")) +
+  theme_minimal(base_size = 18)
+```
+
+
+# lm
+
+```{r , echo=FALSE}
+
+
+
+allhibis_sv_filtered_all%>% 
+         filter(date(daten) > "2020-11-01"   & date(daten) <"2020-12-01" ) %>%
+  ggplot() +
+geom_line(aes(daten,sv,color="SF")) +
+  geom_line(aes(daten,ETR_in * 20,color="ETr")) +
+   geom_line(aes(daten,ETo_in * 20,color="ETo")) +
+  theme_minimal(base_size = 18)
+```
+
+```{r , echo=FALSE}
+
+
+
+allhibis_sv_filtered%>% 
+         filter(date(daten) > "2020-11-01"   & date(daten) <"2020-12-01" ) %>%
+  ggplot() +
+geom_line(aes(daten,sv,color="SF")) +
+  geom_line(aes(daten,ETR_in * 20,color="ETr")) +
+   geom_line(aes(daten,ETo_in * 20,color="ETo")) +
+  theme_minimal(base_size = 18) +
+  labs(color="Metrics", x="Date",y="") 
+ggsave("figs/etvssv.png", width = 20, height = 20, units = "cm")
+```
