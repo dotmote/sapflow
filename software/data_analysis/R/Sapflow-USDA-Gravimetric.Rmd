@@ -1,0 +1,341 @@
+---
+title: "Sapflow - USDA Gravimetric"
+author: "Aji John@DotMote Labs"
+date: "05/01/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Running notebook for the Sapflow data captured by Sapflow nodes (DotmoteLabs)
+
+```{r , include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction 
+
+Sapflow measurements help with tree water use that can be exteded to canopy level transpiration assessments.
+
+```{r }
+library(knitr)
+library(tidyverse)
+library(lubridate)
+```
+
+## Load helper functions
+
+
+```{r, include=FALSE}
+## Summarizes data.
+## Gives count, mean, standard deviation, standard error of the mean, and confidence interval (default 95%).
+##   data: a data frame.
+##   measurevar: the name of a column that contains the variable to be summariezed
+##   groupvars: a vector containing names of columns that contain grouping variables
+##   na.rm: a boolean that indicates whether to ignore NA's
+##   conf.interval: the percent range of the confidence interval (default is 95%)
+summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
+                      conf.interval=.95, .drop=TRUE) {
+    library(plyr)
+
+    # New version of length which can handle NA's: if na.rm==T, don't count them
+    length2 <- function (x, na.rm=FALSE) {
+        if (na.rm) sum(!is.na(x))
+        else       length(x)
+    }
+
+    # This does the summary. For each group's data frame, return a vector with
+    # N, mean, and sd
+    datac <- ddply(data, groupvars, .drop=.drop,
+      .fun = function(xx, col) {
+        c(N    = length2(xx[[col]], na.rm=na.rm),
+          mean = mean   (xx[[col]], na.rm=na.rm),
+          sd   = sd     (xx[[col]], na.rm=na.rm)
+        )
+      },
+      measurevar
+    )
+
+    # Rename the "mean" column    
+    datac <- rename(datac, c("mean" = measurevar))
+
+    datac$se <- datac$sd / sqrt(datac$N)  # Calculate standard error of the mean
+
+    # Confidence interval multiplier for standard error
+    # Calculate t-statistic for confidence interval: 
+    # e.g., if conf.interval is .95, use .975 (above/below), and use df=N-1
+    ciMult <- qt(conf.interval/2 + .5, datac$N-1)
+    datac$ci <- datac$se * ciMult
+
+    return(datac)
+}
+```
+
+## Verify the input files
+
+
+```{r pressure, echo=FALSE}
+sapflow_usda_2021_7<-  read_csv('./data/sapflow-usda-7_2021-04-16_to_2021-05-01.csv')
+
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2021_7$dateP <- as_datetime(sapflow_usda_2021_7$timestamp, tz="America/Denver")
+
+sapflow_usda_2021_8<-  read_csv('./data/sapflow-usda-8_2021-04-16_to_2021-05-01.csv')
+
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2021_8$dateP <- as_datetime(sapflow_usda_2021_8$timestamp, tz="America/Denver")
+
+sapflow_usda_2021_9<-  read_csv('./data/sapflow-usda-9_2021-04-16_to_2021-05-01.csv')
+
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2021_9$dateP <- as_datetime(sapflow_usda_2021_9$timestamp, tz="America/Denver")
+
+sapflow_usda_2021_10<-  read_csv('./data/sapflow-usda-10_2021-04-16_to_2021-05-01.csv')
+
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2021_10$dateP <- as_datetime(sapflow_usda_2021_10$timestamp, tz="America/Denver")
+
+
+
+```
+
+## Run summary analysis
+
+```{r }
+sapflow_usda_2021 <-  rbind(sapflow_usda_2021_7,
+                            sapflow_usda_2021_8,
+                            sapflow_usda_2021_9,
+                            sapflow_usda_2021_10)
+
+  
+```
+
+## Plot the raw heat ratio data 
+
+```{r }
+sapflow_usda_2021 %>% mutate(meanhr = meanHeatRatio) %>%
+  filter(!meanhr =='NaN') %>% mutate(mr=as.numeric(meanhr)) %>%
+     mutate(node = as.factor(nodeId),Vh = log(mr),hr = hour(date)) %>%
+      filter(date(dateP) == "2021-04-25" ) %>%
+  #filter(nodeId %in% c("sapflow-dotmote-labs-2" ,"sapflow-dotmote-labs-3", "sapflow-dotmote-labs-4","sapflow-dotmote-labs-5")) %>%
+  ggplot() + geom_point(aes(dateP,mr,color=node) )  +
+  facet_grid(~node) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 7-10 USDA - Gravimetric Maize", caption="Source : dotmotelabs.com") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+```
+
+## Verify diurnal 
+
+
+## Do zero offsetting 
+
+Plot alternatively, but do offsetting by zeroing out the heatratio by using the values from hrs 0,1 and 2. Assumption being around hours (0-2), ideally no sapflow in plants.
+
+```{r , echo=TRUE}
+
+usda_7_offset <- sapflow_usda_2021 %>%  mutate(meanhr = meanHeatRatio,hr = hour(dateP)) %>%
+  filter(!meanhr =='NaN') %>% 
+  filter(nodeId %in% c("sapflow-usda-7"))  %>% 
+  filter( hr %in% c(0,1,2)) %>% summarise(mhr = mean(meanhr))
+
+
+usda_8_offset <- sapflow_usda_2021 %>%  mutate(meanhr = meanHeatRatio,hr = hour(dateP)) %>%
+  filter(!meanhr =='NaN') %>% 
+  filter(nodeId %in% c("sapflow-usda-8"))  %>%
+  filter( hr %in% c(0,1,2)) %>% summarise(mhr = mean(meanhr))
+
+usda_9_offset <- sapflow_usda_2021 %>%  mutate(meanhr = meanHeatRatio,hr = hour(dateP)) %>%
+  filter(!meanhr =='NaN') %>% 
+  filter(nodeId %in% c("sapflow-usda-9"))  %>% 
+  filter( hr %in% c(0,1,2)) %>% summarise(mhr = mean(meanhr))
+
+usda_10_offset <- sapflow_usda_2021 %>%  mutate(meanhr = meanHeatRatio,hr = hour(dateP)) %>%
+  filter(!meanhr =='NaN') %>% 
+  filter(nodeId %in% c("sapflow-usda-10"))  %>% 
+  filter( hr %in% c(0,1,2)) %>% summarise(mhr = mean(meanhr))
+
+
+sapflow_usda_2021_adjusted <- sapflow_usda_2021
+sapflow_usda_2021_adjusted$hr = hour(sapflow_usda_2021$dateP)
+sapflow_usda_2021_adjusted$mr <- 0
+
+sapflow_usda_2021_adjusted[sapflow_usda_2021_adjusted$nodeId == "sapflow-usda-7",]$mr =  sapflow_usda_2021_adjusted[sapflow_usda_2021$nodeId == "sapflow-usda-7",]$meanHeatRatio + (1-as.numeric(usda_7_offset))
+
+sapflow_usda_2021_adjusted[sapflow_usda_2021_adjusted$nodeId == "sapflow-usda-8",]$mr =  sapflow_usda_2021_adjusted[sapflow_usda_2021$nodeId == "sapflow-usda-8",]$meanHeatRatio + (1-as.numeric(usda_8_offset))
+
+sapflow_usda_2021_adjusted[sapflow_usda_2021_adjusted$nodeId == "sapflow-usda-9",]$mr =  sapflow_usda_2021_adjusted[sapflow_usda_2021$nodeId == "sapflow-usda-9",]$meanHeatRatio + (1-as.numeric(usda_9_offset))
+
+sapflow_usda_2021_adjusted[sapflow_usda_2021_adjusted$nodeId == "sapflow-usda-10",]$mr =  sapflow_usda_2021_adjusted[sapflow_usda_2021$nodeId == "sapflow-usda-10",]$meanHeatRatio + (1-as.numeric(usda_10_offset))
+
+
+
+#SE 
+sapflow_usda_2021_adjusted_se <- summarySE(sapflow_usda_2021_adjusted, measurevar="mr", groupvars=c("nodeId","hr"))
+
+
+
+
+# TODO VPD SE
+
+
+```
+
+## Plot the adjusted with original 
+
+```{r , echo=TRUE}
+
+sapflow_usda_2021 %>% 
+  mutate(node = as.factor(nodeId),hr = hour(dateP)) %>%
+  mutate(mr = meanHeatRatio) %>%
+  ggplot() + geom_point(aes(hr,mr,color=node) )  +
+  facet_grid(~nodeId) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 7-10 USDA - Gravimetric Maize", caption="Source : dotmotelabs.com") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+
+```
+
+```{r , echo=TRUE}
+
+sapflow_usda_2021_adjusted %>% 
+  mutate(node = as.factor(nodeId),hr = hour(dateP)) %>%
+  ggplot() + geom_point(aes(hr,mr,color=node) )  +
+  facet_grid(~nodeId) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 7-10 USDA - Gravimetric Maize", caption="Source : dotmotelabs.com") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+
+```
+
+## Compare Original and Adjusted HR
+
+
+```{r , echo=TRUE}
+
+lm(sapflow_usda_2021_adjusted$meanHeatRatio~sapflow_usda_2021_adjusted$mr)
+
+sapflow_usda_2021_adjusted %>% 
+  ggplot() +
+  geom_point(aes(meanHeatRatio,mr,color=nodeId)) +
+  theme_minimal(base_size = 14)
+```
+
+## Heat pulse velocity
+
+```{r , echo=TRUE}
+
+sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+#        filter(date(dateP) == "2020-12-01" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=sv,color=nodeId)) +
+   geom_line(aes(x = dateP, y=sv,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  theme(legend.position = c(.17, .6))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
+## Smooth
+
+```{r , echo=TRUE}
+
+sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+  #filter(date(dateP) == "2021-03-20" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = hr, y=sv,color=nodeId)) +
+  geom_smooth(aes(x = hr, y=sv,color=nodeId)) +
+    theme_minimal() + 
+  #scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  facet_wrap(~date(dateP) ) +
+
+  theme(legend.position = "bottom")+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+ggsave("figs/usda-graivimetric-Maize-vh-smoothed.png", width = 20, height = 20, units = "cm")
+
+```
+
+## Heat pulse velocity 1 to 15
+
+```{r , echo=TRUE}
+
+sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+#        filter(date(dateP) == "2020-12-01" ) %>%
+          filter(date(dateP) >= "2021-04-20" ) %>%
+   filter(date(dateP) <= "2021-04-29" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=sv,color=nodeId)) +
+   geom_line(aes(x = dateP, y=sv,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  theme(legend.position = c(.17, .6))+
+    labs(color='Node ID',x="Time (Date)") +
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+ggsave("figs/usda-graivimetric-Maize-stress-event.png", width = 20, height = 20, units = "cm")
+
+```
+
+## Mass flow
+
+
+```{r , echo=TRUE}
+
+sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+   mutate (vs =1.7 * sv )%>% 
+   mutate (flow = 3.14 * (1.5)^2 *vs )%>% 
+   #     filter(date(dateP) == "2021-03-18" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=flow,color=nodeId)) +
+   geom_line(aes(x = dateP, y=flow,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    #name = expression(~V[h] (cm~h^{"-1"}))
+       # Features of the first axis
+    name = expression("Sapflow rate"~J~(g~h^{"-1"})),
+  ) +
+  theme(legend.position = c(.17, .8))+
+  labs(color='Node ID',x="Time (Date)") +
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
+
+## Get the scale data
+```{r , echo=TRUE}
+
+
+gravimetric_all <- readxl::read_xlsx('./data/Maize 4-16 to 4-30-21 Scale Data all MDT.xlsx')
+```
+
+## Map the patterns for Sunny days with Cloudy/Rainy Days - Use Agrimet. Use Sapflow velocity curves. Maybe above a threshold of 10 are viable days. 
+
+
