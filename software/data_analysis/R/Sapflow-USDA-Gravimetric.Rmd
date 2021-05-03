@@ -452,8 +452,8 @@ guides(fill = guide_legend(keywidth = 1, keyheight = 1),
 
  gravimetric_all_raw %>% 
   mutate (daten = date(datetime),weight = `Weight(kg)`,day= day(datetime),hour=hour(datetime))%>% 
-     filter(date(datetime) >= "2021-04-23" ) %>%
-       filter(date(datetime) <= "2021-04-30" ) %>%
+     filter(date(datetime) >= "2021-04-22" ) %>%
+       filter(date(datetime) <= "2021-04-28" ) %>%
  # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
   ggplot() +
    geom_point(aes(x = hour, y=weight,color=Dotmote)) +
@@ -483,8 +483,8 @@ sapflow_usda_2021_adjusted %>%
           day=day(dateP),hour=hour(dateP))%>% 
        #filter(date(dateP) == "2021-04-24" ) %>%
  # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
-       filter(date(dateP)  >= "2021-04-23" ) %>%
-       filter(date(dateP)  <= "2021-04-30" ) %>%
+       filter(date(dateP)  >= "2021-04-22" ) %>%
+       filter(date(dateP)  <= "2021-04-28" ) %>%
   ggplot() +
    geom_point(aes(x = hour, y=sv,color=nodeId)) +
    geom_line(aes(x = hour, y=sv,color=nodeId)) +
@@ -502,3 +502,49 @@ guides(fill = guide_legend(keywidth = 1, keyheight = 1),
   labs(color="Node",x="Time (Hour)")
 
 ```
+
+# Explore relationship between Sapflow and Gravimetric 
+
+```{r , echo=TRUE}
+
+blockDataSapflow <- sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP), 
+          day=day(dateP),hour=hour(dateP))%>% 
+       #filter(date(dateP) == "2021-04-24" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+       filter(date(dateP)  >= "2021-04-22" ) %>%
+       filter(date(dateP)  <= "2021-04-28" ) %>% 
+  as.data.frame()
+blockDataGavimetric<- gravimetric_all_raw %>% 
+  mutate (daten = date(datetime),weight = `Weight(kg)`,day= day(datetime),hour=hour(datetime))%>% 
+     filter(date(datetime) >= "2021-04-22" ) %>%
+       filter(date(datetime) <= "2021-04-28" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+   as.data.frame()
+
+# Take values from 6 to 18 for all the plants
+filteredSapflow <- blockDataSapflow %>% filter(hour %in% c(6:18)) %>% 
+  dplyr::group_by(day,hour) %>%
+  dplyr::summarize(mhr=mean(mr)) %>%
+  select(day,hour,mhr) %>%
+  as.data.frame()
+filteredGravimetric <- blockDataGavimetric %>% filter(hour %in% c(6:18)) %>% 
+    dplyr::group_by(day,hour) %>%
+  dplyr::summarize(mw=mean(weight)) %>%
+  select(day,hour,mw) %>%
+  as.data.frame()
+```
+```{r , echo=TRUE}
+
+combinedFiltered <- filteredGravimetric
+combinedFiltered$mhr <- filteredSapflow$mhr
+
+# Take values from 6 to 18 for all the plants
+ggplot() +
+  geom_point(data=combinedFiltered,aes(mw,mhr,color=as.factor(hour))) +
+  theme_minimal(base_size = 14)+ 
+  labs(x="Weight (kg)", y="Vh")
+
+summary(lm(data = combinedFiltered, mhr~mw))
+```
+
