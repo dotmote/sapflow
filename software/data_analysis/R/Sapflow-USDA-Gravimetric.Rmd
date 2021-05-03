@@ -334,8 +334,164 @@ guides(fill = guide_legend(keywidth = 1, keyheight = 1),
 
 
 gravimetric_all <- readxl::read_xlsx('./data/Maize 4-16 to 4-30-21 Scale Data all MDT.xlsx')
+gravimetric_all_raw <- readxl::read_xlsx('./data/Maize 4-16 to 4-30-21 Scale Data all MDT.xlsx',
+                                         sheet ='Scales Raw Data' )
+gravimetric_all_raw$time <- paste(lubridate::hour(gravimetric_all_raw$`Time (MDT)`),
+                                      lubridate::minute(gravimetric_all_raw$`Time (MDT)`),
+                                      lubridate::second(gravimetric_all_raw$`Time (MDT)`),sep = ":")
+gravimetric_all_raw$datetime <- lubridate::as_datetime(trimws(paste(lubridate::as_date(gravimetric_all_raw$Date),
+                                      gravimetric_all_raw$time," ")), tz="America/Denver")
+
+
 ```
 
 ## Map the patterns for Sunny days with Cloudy/Rainy Days - Use Agrimet. Use Sapflow velocity curves. Maybe above a threshold of 10 are viable days. 
 
+```{r , echo=TRUE}
 
+gravimetric_all_raw %>% 
+  mutate (daten = date(datetime),weight = `Weight(kg)`)%>% 
+     filter(date(datetime) >= "2021-04-19" ) %>%
+       filter(date(datetime) <= "2021-04-30" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = datetime, y=weight,color=Dotmote)) +
+   geom_line(aes(x = datetime, y=weight,color=Dotmote)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~Weight~(Kg))
+
+  ) +
+  theme(legend.position = c(.17, .6))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
+
+```{r , echo=TRUE}
+
+usda_gravi <- gravimetric_all_raw %>% 
+  mutate (daten = date(datetime),weight = `Weight(kg)`)%>% 
+     filter(date(datetime) >= "2021-04-24" ) %>%
+       filter(date(datetime) <= "2021-04-24" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = datetime, y=weight,color=Dotmote)) +
+   geom_line(aes(x = datetime, y=weight,color=Dotmote)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~Weight~(Kg))
+
+  ) +
+  theme(legend.position = c(.17, .6))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
+
+```{r , echo=TRUE}
+
+sapflow_usda <- sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+       filter(date(dateP) == "2021-04-24" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=sv,color=nodeId)) +
+   geom_line(aes(x = dateP, y=sv,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  theme(legend.position = c(.17, .6))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
+
+```{r , echo=TRUE}
+library(patchwork)
+
+usda_gravi + sapflow_usda
+ggsave("figs/gravi_sapflow_usda.png", width = 20, height = 20, units = "cm")
+```
+
+
+```{r , echo=TRUE}
+
+sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+       #filter(date(dateP) == "2021-04-24" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=sv,color=nodeId)) +
+   geom_line(aes(x = dateP, y=sv,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  theme(legend.position = c(.17, .6))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
+
+
+
+```{r , echo=TRUE}
+
+ gravimetric_all_raw %>% 
+  mutate (daten = date(datetime),weight = `Weight(kg)`)%>% 
+     filter(date(datetime) >= "2021-04-24" ) %>%
+       filter(date(datetime) <= "2021-04-30" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = datetime, y=weight,color=Dotmote)) +
+   geom_line(aes(x = datetime, y=weight,color=Dotmote)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~Weight~(Kg))
+
+  ) +
+  theme(legend.position = c(.17, .6))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
+
+
+
+```{r , echo=TRUE}
+
+sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+       #filter(date(dateP) == "2021-04-24" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+       filter(date(dateP)  >= "2021-04-24" ) %>%
+       filter(date(dateP)  <= "2021-04-30" ) %>%
+  ggplot() +
+   geom_point(aes(x = dateP, y=sv,color=nodeId)) +
+   geom_line(aes(x = dateP, y=sv,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  theme(legend.position = c(.17, .6))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
