@@ -351,8 +351,8 @@ gravimetric_all_raw$datetime <- lubridate::as_datetime(trimws(paste(lubridate::a
 
 gravimetric_all_raw %>% 
   mutate (daten = date(datetime),weight = `Weight(kg)`)%>% 
-     filter(date(datetime) >= "2021-04-19" ) %>%
-       filter(date(datetime) <= "2021-04-30" ) %>%
+     filter(date(datetime) >= "2021-04-22" ) %>%
+       filter(date(datetime) <= "2021-04-28" ) %>%
  # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
   ggplot() +
    geom_point(aes(x = datetime, y=weight,color=Dotmote)) +
@@ -364,10 +364,82 @@ gravimetric_all_raw %>%
     name = expression(~Weight~(Kg))
 
   ) +
-  theme(legend.position = c(.17, .6))+
+  theme(legend.position = "bottom")+
 guides(fill = guide_legend(keywidth = 1, keyheight = 1),
-    linetype=guide_legend(keywidth = 3, keyheight = 1))
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+  labs(color="Node",x="Time (Date)")
+ggsave("figs/gravi_plot.png", width = 20, height = 20, units = "cm")
 
+```
+```{r , echo=TRUE}
+
+gravimetric_all_raw %>% 
+  mutate (daten = date(datetime),weight = `Weight(kg)`)%>% 
+     filter(date(datetime) >= "2021-04-28" ) %>%
+       filter(date(datetime) <= "2021-04-28" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = datetime, y=weight,color=Dotmote)) +
+   geom_line(aes(x = datetime, y=weight,color=Dotmote)) +
+    theme_minimal(base_size = 18) + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~Weight~(Kg))
+
+  ) +
+  theme(legend.position = "bottom")+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+  labs(color="Node",x="Time (Date)")
+ggsave("figs/gravi_plot_28.png", width = 20, height = 20, units = "cm")
+
+```
+
+```{r , echo=TRUE}
+sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+        filter(date(dateP) >= "2021-04-22" ) %>%
+       filter(date(dateP) <= "2021-04-28" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=sv,color=nodeId)) +
+   geom_line(aes(x = dateP, y=sv,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  theme(legend.position = "bottom")+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+  labs(color="Node",x="Time (Date)")
+ggsave("figs/sap_plot.png", width = 20, height = 20, units = "cm")
+```
+
+```{r , echo=TRUE}
+sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+        filter(date(dateP) >= "2021-04-22" ) %>%
+       filter(date(dateP) <= "2021-04-28" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_smooth(aes(x = dateP, y=sv,color=nodeId)) +
+   #geom_line(aes(x = dateP, y=sv,color=nodeId)) +
+    theme_minimal(base_size = 18) + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  theme(legend.position = "bottom")+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+  labs(color="Node",x="Time (Date)")
+ggsave("figs/sap_smmoth_plot.png", width = 28, height = 15, units = "cm")
 ```
 
 ```{r , echo=TRUE}
@@ -589,6 +661,8 @@ filteredGravimetric <- blockDataGavimetric %>%
   select(day,hour,mw) %>%
   as.data.frame()
 ```
+
+
 ```{r , echo=TRUE}
 
 combinedFiltered <-  filteredSapflow
@@ -601,7 +675,91 @@ ggplot() +
   labs(x="Weight (kg)", y="Vh") +
   labs(color="Hour")
 ggsave("figs/gravi_sapflow_compare.png", width = 20, height = 20, units = "cm")
+```
 
+
+```{r , echo=TRUE}
 summary(lm(data = combinedFiltered, mhr~mw))
 ```
 
+# check the temp
+
+```{r , echo=TRUE}
+climate_gravimetric_all <- readxl::read_xlsx('./data/Greenhouse 5 min data 4-16 to 4-30-21 Maize.xlsx')
+head(climate_gravimetric_all)
+climate_gravimetric_all$time <- paste(lubridate::hour(climate_gravimetric_all$Time),
+                                      lubridate::minute(climate_gravimetric_all$Time),
+                                      lubridate::second(climate_gravimetric_all$Time),sep = ":")
+climate_gravimetric_all$datetime <- lubridate::as_datetime(trimws(paste(lubridate::as_date(climate_gravimetric_all$Date),
+                                      climate_gravimetric_all$time," ")), tz="America/Denver")
+
+```
+
+# plot for the day
+
+```{r , echo=TRUE}
+
+climate_gravimetric_all %>% 
+  mutate (daten = date(datetime),tempF = `Climate Temperature(°F)`)%>% 
+     filter(date(datetime) >= "2021-04-22" ) %>%
+       filter(date(datetime) <= "2021-04-28" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = datetime, y=tempF)) +
+   geom_line(aes(x = datetime, y=tempF)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~Temperature~(F))
+
+  ) +
+  theme(legend.position = "bottom")+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+  labs(color="Node",x="Time (Date)")
+ggsave("figs/gravi_climate.png", width = 20, height = 20, units = "cm")
+
+```
+
+
+VPD
+```{r , echo=FALSE}
+
+#(0.611 * 10^ (7.5 * T / (237 +T)) * (1− RH/100)
+ 
+climate_gravimetric_all %>% 
+  mutate (daten = date(datetime),tempF = `Climate Temperature(°F)`,rh = `Climate Humidity(%Rh)`)%>% 
+     filter(date(datetime) >= "2021-04-22" ) %>%
+       filter(date(datetime) <= "2021-04-28" ) %>%
+  mutate(vpd = (0.611 * 10^((7.5 * tempF )/(237 + tempF)) * ( 1- (rh/100)))) %>% 
+  ggplot( aes(x=datetime, y=vpd))  +
+    geom_line(color='red') +
+    geom_point() +
+    labs(x="Time (Date)", y="VPD (kPa)",colour = "Hibiscus",title = "") +
+   theme_minimal(base_size = 18) +
+  theme(legend.position = c(1, 0.0050))
+
+ggsave("figs/gravi_climate_vpd.png", width = 20, height = 20, units = "cm")
+```
+
+```{r , echo=FALSE}
+
+#(0.611 * 10^ (7.5 * T / (237 +T)) * (1− RH/100)
+ 
+climate_gravimetric_all %>% 
+  mutate (daten = date(datetime),tempF = `Climate Temperature(°F)`,
+          rh = `Climate Humidity(%Rh)`,
+          sr= `TCAP; Broadcast Information; Outdoor Light Energy(W/m²)`)%>% 
+     filter(date(datetime) >= "2021-04-22" ) %>%
+       filter(date(datetime) <= "2021-04-28" ) %>%
+  mutate(vpd = (0.611 * 10^((7.5 * tempF )/(237 + tempF)) * ( 1- (rh/100)))) %>% 
+  ggplot( aes(x=datetime, y=sr))  +
+    geom_line(color='red') +
+    geom_point() +
+    labs(x="Time (Date)", y="Outdoor Light Energy(W/m²)",colour = "Hibiscus",title = "") +
+   theme_minimal(base_size = 18) +
+  theme(legend.position = c(1, 0.0050))
+
+ggsave("figs/gravi_climate_energy.png", width = 20, height = 20, units = "cm")
+```
