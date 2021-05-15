@@ -495,6 +495,87 @@ usda_gravi / sapflow_usda
 ggsave("figs/gravi_sapflow_usda.png", width = 20, height = 20, units = "cm")
 ```
 
+# try the correlation
+```{r , echo=TRUE}
+
+usda_gravi_24 <- gravimetric_all_raw %>% 
+  mutate (daten = date(datetime),weight = `Weight(kg)`, 
+          hr = hour(datetime), mints = minute(datetime))%>% 
+     filter(date(datetime) >= "2021-04-24" ) %>%
+       filter(date(datetime) <= "2021-04-24" ) %>%
+  as.data.frame()
+usda_gravi_24_8 <- gravimetric_all_raw %>% 
+  mutate (daten = date(datetime),weight = `Weight(kg)`, 
+          hr = hour(datetime), mints = minute(datetime))%>% 
+     filter(date(datetime) >= "2021-04-24" ) %>%
+       filter(date(datetime) <= "2021-04-24" ) %>%
+  filter(Dotmote =='USDA8') %>%
+  as.data.frame()
+
+ #
+sapflow_usda_24 <- sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+       filter(date(dateP) == "2021-04-24" ) %>%
+  as.data.frame()
+sapflow_usda_24_8 <- sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+       filter(date(dateP) == "2021-04-24" & nodeId=='sapflow-usda-8') %>%
+  as.data.frame()
+
+```
+
+```{r , echo=TRUE}
+
+msv_s8 <- sapflow_usda_24_8 %>% 
+   group_by(nodeId,hr) %>% 
+ # arrange(nodeId, hr, sv) %>% 
+  dplyr::summarise(m_sv = mean(sv)) %>%
+as.data.frame()  
+usda_gravi_24_8_weight_hrly <-  usda_gravi_24_8 %>%
+  group_by(Dotmote,hr) %>%
+    dplyr::summarise(m_weight= mean(weight)) %>%
+as.data.frame()  
+  
+usda_gravi_24_8_weight_hrly_abs <- usda_gravi_24_8_weight_hrly %>%
+  group_by(Dotmote,hr) %>%
+  mutate(diff = abs(m_weight - lag(m_weight)) ) %>%
+  as.data.frame()
+
+ summary( lm(usda_gravi_24_8_weight_hrly_abs$diff ~ msv_s8$m_sv))
+```
+
+```{r , echo=FALSE}
+# Adjust the Sapflow
+
+coeff <- 1
+
+msv_s8 %>% 
+  ggplot() +
+   geom_point(aes(x = hr, y=m_sv,color=nodeId)) +
+   geom_line(aes(x = hr, y=m_sv,color=nodeId)) +
+   geom_point( data=usda_gravi_24_8_weight_hrly,aes(x=hr,y=m_weight / coeff,color='Weigh')) +
+  #geom_smooth(aes(dateP,sv),span = 0.1, se = FALSE) +
+  #geom_smooth(aes(x = dateP, y=meanhr,color=as.factor(nodeID)),method = loess, span="0.0008",se = TRUE)  +
+    theme_minimal() + 
+  #scale_x_datetime(date_minor_breaks = "1 day") + 
+  # labs(subtitle="",title=expression(~italic(Corn~~USDA)), y =expression(~V[h] (cm~h^{"-1"})),x="Date",
+  #              colour = "Node ID") +
+  # Divide by 10 to get the same range than the temperature
+  
+  scale_y_continuous(
+    
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"})),
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*coeff, name="Flow (g/s)")
+  ) +
+  theme(legend.position = c(.17, 1))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+```
+
+
 
 ```{r , echo=TRUE}
 
