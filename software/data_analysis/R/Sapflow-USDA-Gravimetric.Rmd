@@ -504,6 +504,14 @@ usda_gravi_24 <- gravimetric_all_raw %>%
      filter(date(datetime) >= "2021-04-24" ) %>%
        filter(date(datetime) <= "2021-04-24" ) %>%
   as.data.frame()
+
+usda_gravi_all <- gravimetric_all_raw %>% 
+  mutate (daten = date(datetime),weight = `Weight(kg)`, 
+          hr = hour(datetime), mints = minute(datetime))%>% 
+     filter(date(datetime) >= "2021-04-22" ) %>%
+       filter(date(datetime) <= "2021-04-28" ) %>%
+  as.data.frame()
+
 usda_gravi_24_8 <- gravimetric_all_raw %>% 
   mutate (daten = date(datetime),weight = `Weight(kg)`, 
           hr = hour(datetime), mints = minute(datetime))%>% 
@@ -517,6 +525,13 @@ sapflow_usda_24 <- sapflow_usda_2021_adjusted %>%
   mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
        filter(date(dateP) == "2021-04-24" ) %>%
   as.data.frame()
+
+sapflow_usda_all <- sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+       filter(date(dateP) >= "2021-04-22" ) %>%
+     filter(date(dateP) <= "2021-04-28" ) %>%
+  as.data.frame()
+
 sapflow_usda_24_8 <- sapflow_usda_2021_adjusted %>% 
   mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
        filter(date(dateP) == "2021-04-24" & nodeId=='sapflow-usda-8') %>%
@@ -530,18 +545,213 @@ msv_s8 <- sapflow_usda_24_8 %>%
    group_by(nodeId,hr) %>% 
  # arrange(nodeId, hr, sv) %>% 
   dplyr::summarise(m_sv = mean(sv)) %>%
-as.data.frame()  
+  as.data.frame()  
+
+msv_s_all <- sapflow_usda_all %>% 
+   group_by(daten,nodeId,hr) %>% 
+ # arrange(nodeId, hr, sv) %>% 
+  dplyr::summarise(m_sv = mean(sv)) %>%
+  as.data.frame()  
+
+msv_s_all_7 <- sapflow_usda_all %>% 
+  filter(nodeId=='sapflow-usda-7') %>%
+   group_by(daten,nodeId,hr) %>% 
+ # arrange(nodeId, hr, sv) %>% 
+  dplyr::summarise(m_sv = mean(sv)) %>%
+  as.data.frame()  
+
+msv_s_all_8 <- sapflow_usda_all %>% 
+  filter(nodeId=='sapflow-usda-8') %>%
+   group_by(daten,nodeId,hr) %>% 
+ # arrange(nodeId, hr, sv) %>% 
+  dplyr::summarise(m_sv = mean(sv)) %>%
+  as.data.frame()  
+
+msv_s_all_9 <- sapflow_usda_all %>% 
+  filter(nodeId=='sapflow-usda-9') %>%
+   group_by(daten,nodeId,hr) %>% 
+ # arrange(nodeId, hr, sv) %>% 
+  dplyr::summarise(m_sv = mean(sv)) %>%
+  as.data.frame()  
+
+msv_s_all_10 <- sapflow_usda_all %>% 
+  filter(nodeId=='sapflow-usda-10') %>%
+   group_by(daten,nodeId,hr) %>% 
+ # arrange(nodeId, hr, sv) %>% 
+  dplyr::summarise(m_sv = mean(sv)) %>%
+  as.data.frame()  
+
+
 usda_gravi_24_8_weight_hrly <-  usda_gravi_24_8 %>%
   group_by(Dotmote,hr) %>%
     dplyr::summarise(m_weight= mean(weight)) %>%
 as.data.frame()  
+
+usda_gravi_all_weight_hrly <-  usda_gravi_all %>%
+  group_by(daten,Dotmote,hr) %>%
+    dplyr::summarise(m_weight= mean(weight)) %>%
+as.data.frame()  
+
   
 usda_gravi_24_8_weight_hrly_abs <- usda_gravi_24_8_weight_hrly %>%
   group_by(Dotmote,hr) %>%
   mutate(diff = abs(m_weight - lag(m_weight)) ) %>%
   as.data.frame()
 
+usda_gravi_all_weight_hrly_abs <- usda_gravi_all_weight_hrly %>%
+  group_by(daten,Dotmote,hr) %>%
+  mutate(diff = abs(m_weight - lag(m_weight)) ) %>%
+  order_by(daten,Dotmote,hr) %>%
+  as.data.frame()
+
+usda_gravi_all_weight_hrly_abs_7 <- usda_gravi_all_weight_hrly %>%
+  filter(Dotmote == 'USDA7')  %>%
+  group_by(daten,Dotmote,hr) %>%
+  mutate(diff = abs(m_weight - lag(m_weight)) ) %>%
+  as.data.frame()
+
+usda_gravi_all_weight_hrly_abs_8 <- usda_gravi_all_weight_hrly %>%
+  filter(Dotmote == 'USDA8')  %>%
+  group_by(daten,Dotmote,hr) %>%
+  mutate(diff = abs(m_weight - lag(m_weight)) ) %>%
+  as.data.frame()
+
+usda_gravi_all_weight_hrly_abs_9 <- usda_gravi_all_weight_hrly %>%
+  filter(Dotmote == 'USDA9')  %>%
+  group_by(daten,Dotmote,hr) %>%
+  mutate(diff = abs(m_weight - lag(m_weight)) ) %>%
+  as.data.frame()
+
+usda_gravi_all_weight_hrly_abs_10 <- usda_gravi_all_weight_hrly %>%
+  filter(Dotmote == 'USDA10')  %>%
+  group_by(daten,Dotmote,hr) %>%
+  mutate(diff = abs(m_weight - lag(m_weight)) ) %>%
+  as.data.frame()
+
+
  summary( lm(usda_gravi_24_8_weight_hrly_abs$diff ~ msv_s8$m_sv))
+```
+# Plot hourly but one day
+```{r , echo=FALSE}
+
+ggplot() +
+geom_point(data = usda_gravi_24_8_weight_hrly_abs, aes(x=hr,diff,color="GM")) +
+geom_point(data= msv_s8, aes(x=hr, y=m_sv/100 , color="SV"))  +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+```
+
+# Plot hourly but smooth it
+```{r , echo=FALSE}
+
+ggplot() +
+geom_smooth(data = usda_gravi_24_8_weight_hrly_abs, aes(x=hr,diff,color="GM")) +
+geom_smooth(data= msv_s8, aes(x=hr, y=m_sv/100 , color="SV"))  +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+```
+
+# Compare , but one node one day
+
+```{r , echo=FALSE}
+
+ggplot() +
+geom_point(data = usda_gravi_all_weight_hrly_abs_8[usda_gravi_all_weight_hrly_abs_8$daten=='2021-04-26',], aes(x=hr,diff,color=Dotmote)) +
+geom_point(data= msv_s_all_8[msv_s_all_8$daten=='2021-04-26',], aes(x=hr, y=m_sv/100 , color=nodeId))  +
+  facet_wrap(.~daten) +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+```
+# All days, one node Node 8
+
+```{r , echo=FALSE}
+
+coeff = 100
+ggplot() +
+  geom_point(data = usda_gravi_all_weight_hrly_abs_7[usda_gravi_all_weight_hrly_abs_7$daten > '2021-04-23',], aes(x=hr,diff,color=Dotmote)) +
+  geom_point(data= msv_s_all_7[msv_s_all_7$daten > '2021-04-23', ], aes(x=hr, y=m_sv/coeff , color=nodeId))  +
+
+
+  facet_wrap(.~daten) +
+  scale_y_continuous(
+    
+    # Features of the first axis
+    name = "Flow (kg/hr)" ,
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*(coeff), name=expression(~V[h] (cm~h^{"-1"})))
+  ) +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+```
+
+
+# All days, one node Node 8
+
+```{r , echo=FALSE}
+
+coeff = 100
+ggplot() +
+  geom_point(data = usda_gravi_all_weight_hrly_abs_8[usda_gravi_all_weight_hrly_abs_8$daten > '2021-04-23',], aes(x=hr,diff,color=Dotmote)) +
+  geom_point(data= msv_s_all_8[msv_s_all_8$daten > '2021-04-23', ], aes(x=hr, y=m_sv/coeff , color=nodeId))  +
+
+
+  facet_wrap(.~daten) +
+  scale_y_continuous(
+    
+    # Features of the first axis
+    name = "Flow (kg/hr)" ,
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*(coeff), name=expression(~V[h] (cm~h^{"-1"})))
+  ) +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+```
+
+
+# All days, one node Node 9
+
+```{r , echo=FALSE}
+
+coeff = 100
+ggplot() +
+  geom_point(data = usda_gravi_all_weight_hrly_abs_9[usda_gravi_all_weight_hrly_abs_9$daten > '2021-04-23',], aes(x=hr,diff,color=Dotmote)) +
+  geom_point(data= msv_s_all_9[msv_s_all_9$daten > '2021-04-23', ], aes(x=hr, y=m_sv/coeff , color=nodeId))  +
+
+
+  facet_wrap(.~daten) +
+  scale_y_continuous(
+    
+    # Features of the first axis
+    name = "Flow (kg/hr)" ,
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*(coeff), name=expression(~V[h] (cm~h^{"-1"})))
+  ) +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+```
+
+```{r , echo=FALSE}
+
+coeff = 100
+ggplot() +
+  geom_point(data = usda_gravi_all_weight_hrly_abs_10[usda_gravi_all_weight_hrly_abs_10$daten > '2021-04-23',], aes(x=hr,diff,color=Dotmote)) +
+  geom_point(data= msv_s_all_10[msv_s_all_10$daten > '2021-04-23', ], aes(x=hr, y=m_sv/coeff , color=nodeId))  +
+
+
+  facet_wrap(.~daten) +
+  scale_y_continuous(
+    
+    # Features of the first axis
+    name = "Flow (kg/hr)" ,
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*(coeff), name=expression(~V[h] (cm~h^{"-1"})))
+  ) +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
 ```
 
 ```{r , echo=FALSE}
