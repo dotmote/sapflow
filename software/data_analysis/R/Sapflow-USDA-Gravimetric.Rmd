@@ -683,6 +683,7 @@ ggplot() +
   ) +
   theme_minimal(base_size = 18) +
   labs(color="",x=" Time (Hour)" , y="")
+ggsave("figs/sap_gm_compare.png", width = 28, height = 15, units = "cm")
 ```
 
 
