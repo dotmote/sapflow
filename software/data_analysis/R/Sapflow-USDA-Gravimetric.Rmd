@@ -601,7 +601,6 @@ usda_gravi_24_8_weight_hrly_abs <- usda_gravi_24_8_weight_hrly %>%
 usda_gravi_all_weight_hrly_abs <- usda_gravi_all_weight_hrly %>%
   group_by(daten,Dotmote,hr) %>%
   mutate(diff = abs(m_weight - lag(m_weight)) ) %>%
-  order_by(daten,Dotmote,hr) %>%
   as.data.frame()
 
 usda_gravi_all_weight_hrly_abs_7 <- usda_gravi_all_weight_hrly %>%
@@ -754,6 +753,93 @@ ggplot() +
   theme_minimal(base_size = 18) +
   labs(color="",x=" Time (Hour)" , y="")
 ```
+
+Plot the points
+```{r , echo=FALSE}
+
+combined_byDay_SF <- msv_s_all_10[msv_s_all_10$daten > '2021-04-23', ]
+combined_byDay_SF <- rbind(combined_byDay_SF,msv_s_all_7[msv_s_all_7$daten > '2021-04-23', ])
+combined_byDay_SF <- rbind(combined_byDay_SF,msv_s_all_8[msv_s_all_8$daten > '2021-04-23', ])
+combined_byDay_SF <- rbind(combined_byDay_SF,msv_s_all_9[msv_s_all_9$daten > '2021-04-23', ])
+
+combined_byDay_GM <- usda_gravi_all_weight_hrly_abs_10[usda_gravi_all_weight_hrly_abs_10$daten > '2021-04-23',]
+combined_byDay_GM <- rbind(combined_byDay_GM, usda_gravi_all_weight_hrly_abs_7[usda_gravi_all_weight_hrly_abs_7$daten > '2021-04-23',])
+combined_byDay_GM <- rbind(combined_byDay_GM, usda_gravi_all_weight_hrly_abs_8[usda_gravi_all_weight_hrly_abs_8$daten > '2021-04-23',])
+combined_byDay_GM <- rbind(combined_byDay_GM, usda_gravi_all_weight_hrly_abs_9[usda_gravi_all_weight_hrly_abs_9$daten > '2021-04-23',])
+
+combined_byDay_SF$node <- ''
+combined_byDay_SF[combined_byDay_SF$nodeId =='sapflow-usda-10',]$node = 'USDA10'
+combined_byDay_SF[combined_byDay_SF$nodeId =='sapflow-usda-7',]$node = 'USDA7'
+combined_byDay_SF[combined_byDay_SF$nodeId =='sapflow-usda-8',]$node = 'USDA8'
+combined_byDay_SF[combined_byDay_SF$nodeId =='sapflow-usda-9',]$node = 'USDA9'
+
+colors <-  RColorBrewer::brewer.pal(4,name="Spectral")
+
+coeff = 100
+ggplot() +
+   geom_smooth(data= combined_byDay_GM, aes(hr,diff, color=as.factor(Dotmote),linetype = "Scale"),se=FALSE ,)+ 
+    geom_smooth(data= combined_byDay_SF, aes(hr,m_sv/coeff, color=as.factor(node),linetype = "Sapflow"),se=FALSE,
+                arrow = arrow(angle = 15, ends = "both", type = "closed"))+
+   scale_y_continuous(
+    
+    # Features of the first axis
+    name = "Flow (kg/hr)" ,
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*(coeff), name=expression(~V[h] (cm~h^{"-1"})))
+  ) +
+  scale_colour_brewer(palette = "Set1")+
+  scale_linetype_manual("Method",values=c("Scale"=1,"Sapflow"=2)) +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+ggsave("figs/sap_gm_hourly_alldates.png", width = 28, height = 15, units = "cm")
+
+```
+```{r , echo=FALSE}
+
+ggplot() +
+   geom_smooth(data= combined_byDay_GM, aes(hr,diff, color=as.factor(Dotmote),linetype = "Scale"),se=TRUE ,)+ 
+    geom_smooth(data= combined_byDay_SF, aes(hr,m_sv/coeff, color=as.factor(node),linetype = "Sapflow"),se=TRUE,
+                arrow = arrow(angle = 15, ends = "both", type = "closed"))+
+   scale_y_continuous(
+    
+    # Features of the first axis
+    name = "Flow (kg/hr)" ,
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*(coeff), name=expression(~V[h] (cm~h^{"-1"})))
+  ) +
+  scale_colour_brewer(palette = "Set1")+
+  scale_linetype_manual("Method",values=c("Scale"=1,"Sapflow"=2)) +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+ggsave("figs/sap_gm_hourly_alldates_se.png", width = 28, height = 15, units = "cm")
+
+```
+
+```{r , echo=FALSE}
+
+ggplot() +
+   geom_smooth(data= combined_byDay_GM, aes(hr,diff, color=as.factor(Dotmote),linetype = "Scale"),se=FALSE ,)+ 
+    geom_smooth(data= combined_byDay_SF, aes(hr,m_sv/coeff, color=as.factor(node),linetype = "Sapflow"),se=FALSE,
+                arrow = arrow(angle = 15, ends = "both", type = "closed"))+
+  facet_grid(.~daten) +
+   scale_y_continuous(
+    
+    # Features of the first axis
+    name = "Flow (kg/hr)" ,
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*(coeff), name=expression(~V[h] (cm~h^{"-1"})))
+  ) +
+  scale_colour_brewer(palette = "Set1")+
+  scale_linetype_manual("Method",values=c("Scale"=1,"Sapflow"=2)) +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+ggsave("figs/sap_gm_hourly_alldates_seoff_day.png", width = 28, height = 15, units = "cm")
+
+```
+
 
 ```{r , echo=FALSE}
 # Adjust the Sapflow
