@@ -796,7 +796,7 @@ ggsave("figs/sap_gm_hourly_alldates.png", width = 28, height = 15, units = "cm")
 
 ```
 ```{r , echo=FALSE}
-
+ 
 ggplot() +
    geom_smooth(data= combined_byDay_GM, aes(hr,diff, color=as.factor(Dotmote),linetype = "Scale"),se=TRUE ,)+ 
     geom_smooth(data= combined_byDay_SF, aes(hr,m_sv/coeff, color=as.factor(node),linetype = "Sapflow"),se=TRUE,
