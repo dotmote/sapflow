@@ -835,6 +835,7 @@ ggplot() +
   scale_colour_brewer(palette = "Set1")+
   scale_linetype_manual("Method",values=c("Scale"=1,"Sapflow"=2)) +
   theme_minimal(base_size = 18) +
+  theme(legend.position = "bottom") +
   labs(color="",x=" Time (Hour)" , y="")
 ggsave("figs/sap_gm_hourly_alldates_seoff_day.png", width = 28, height = 15, units = "cm")
 
