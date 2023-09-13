@@ -1,0 +1,1369 @@
+---
+title: "Sapflow - USDA Gravimetric - Run 3"
+author: "Aji John@DotMote Labs"
+date: "03/04/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Running notebook for the Sapflow data captured by Sapflow nodes (DotmoteLabs)
+
+```{r , include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction 
+
+Sapflow measurements help with tree water use that can be exteded to canopy level transpiration assessments.
+
+```{r }
+library(knitr)
+library(tidyverse)
+library(lubridate)
+```
+
+## Load helper functions
+
+
+```{r, include=FALSE}
+## Summarizes data.
+## Gives count, mean, standard deviation, standard error of the mean, and confidence interval (default 95%).
+##   data: a data frame.
+##   measurevar: the name of a column that contains the variable to be summariezed
+##   groupvars: a vector containing names of columns that contain grouping variables
+##   na.rm: a boolean that indicates whether to ignore NA's
+##   conf.interval: the percent range of the confidence interval (default is 95%)
+summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
+                      conf.interval=.95, .drop=TRUE) {
+    library(plyr)
+
+    # New version of length which can handle NA's: if na.rm==T, don't count them
+    length2 <- function (x, na.rm=FALSE) {
+        if (na.rm) sum(!is.na(x))
+        else       length(x)
+    }
+
+    # This does the summary. For each group's data frame, return a vector with
+    # N, mean, and sd
+    datac <- ddply(data, groupvars, .drop=.drop,
+      .fun = function(xx, col) {
+        c(N    = length2(xx[[col]], na.rm=na.rm),
+          mean = mean   (xx[[col]], na.rm=na.rm),
+          sd   = sd     (xx[[col]], na.rm=na.rm)
+        )
+      },
+      measurevar
+    )
+
+    # Rename the "mean" column    
+    datac <- rename(datac, c("mean" = measurevar))
+
+    datac$se <- datac$sd / sqrt(datac$N)  # Calculate standard error of the mean
+
+    # Confidence interval multiplier for standard error
+    # Calculate t-statistic for confidence interval: 
+    # e.g., if conf.interval is .95, use .975 (above/below), and use df=N-1
+    ciMult <- qt(conf.interval/2 + .5, datac$N-1)
+    datac$ci <- datac$se * ciMult
+
+    return(datac)
+}
+
+```
+
+
+## Verify the input files of heat ratio
+
+
+```{r pressure, echo=FALSE}
+sapflow_usda_2022_hr_19<-  read_csv('./data/january-2022-gravimetric/heatlogUSDA19 to 1-5-22.csv')
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2022_hr_19$dateP <- as_datetime(sapflow_usda_2022_hr_19$endofheatpulse, tz="America/Denver")
+
+
+sapflow_usda_2022_hr_20<-  read_csv('./data/january-2022-gravimetric/heatlogUSDA20 to 1-5-22.csv')
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2022_hr_20$dateP <- as_datetime(sapflow_usda_2022_hr_20$endofheatpulse, tz="America/Denver")
+
+
+sapflow_usda_2022_hr_25<-  read_csv('./data/january-2022-gravimetric/heatlogUSDA25 to 1-5-22.csv')
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2022_hr_25$dateP <- as_datetime(sapflow_usda_2022_hr_25$endofheatpulse, tz="America/Denver")
+
+
+sapflow_usda_2022_hr_36<-  read_csv('./data/january-2022-gravimetric/heatlogUSDA36 to 1-5-22.csv')
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2022_hr_36$dateP <- as_datetime(sapflow_usda_2022_hr_36$endofheatpulse, tz="America/Denver")
+
+
+
+
+
+
+```
+
+
+## Verify the input files
+
+
+```{r pressure, echo=FALSE}
+sapflow_usda_2022_19<-  read_csv('./data/january-2022-gravimetric/datalogUSDA19 to 1-5-22.csv')
+
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2022_19$dateP <- as_datetime(sapflow_usda_2022_19$rtcUnixTimestamp, tz="America/Denver")
+
+
+sapflow_usda_2022_20<-  read_csv('./data/january-2022-gravimetric/datalogUSDA20 to 1-5-22.csv')
+
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2022_20$dateP <- as_datetime(sapflow_usda_2022_20$rtcUnixTimestamp, tz="America/Denver")
+
+
+
+sapflow_usda_2022_25<-  read_csv('./data/january-2022-gravimetric/datalogUSDA25 to 1-5-22.csv')
+
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2022_25$dateP <- as_datetime(sapflow_usda_2022_25$rtcUnixTimestamp, tz="America/Denver")
+
+
+sapflow_usda_2022_32<-  read_csv('./data/january-2022-gravimetric/datalogUSDA32 to 12-5-21.csv')
+
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2022_32$dateP <- as_datetime(sapflow_usda_2022_32$rtcUnixTimestamp, tz="America/Denver")
+
+sapflow_usda_2022_36<-  read_csv('./data/january-2022-gravimetric/datalogUSDA36 to 1-5-22.csv')
+
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2022_36$dateP <- as_datetime(sapflow_usda_2022_36$rtcUnixTimestamp, tz="America/Denver")
+
+
+
+```
+
+## Run summary analysis
+
+```{r }
+sapflow_usda_hr_2022 <-  rbind(sapflow_usda_2022_hr_19,
+                            sapflow_usda_2022_hr_20,
+                            sapflow_usda_2022_hr_25,
+                            sapflow_usda_2022_hr_36)
+
+  
+```
+
+## Plot the raw heat ratio data 
+
+```{r }
+sapflow_usda_hr_2022 %>% mutate(meanhr = mhr) %>%
+  filter(!meanhr =='NaN') %>% mutate(mr=as.numeric(meanhr)) %>%
+     mutate(node = as.factor(nodeid),Vh = log(mr),hr = hour(dateP),yr = year(dateP),dy = day(dateP)) %>%
+      filter(date(dateP) > "2021-12-12" & date(dateP) < "2021-12-28" ) %>%
+  #filter(nodeId %in% c("sapflow-dotmote-labs-2" ,"sapflow-dotmote-labs-3", "sapflow-dotmote-labs-4","sapflow-dotmote-labs-5")) %>%
+  ggplot() + geom_point(aes(dateP,1/mr,color=node) )  +
+  facet_grid(dy~node) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 19,20,25 and 36 USDA - Gravimetric Maize", caption="Source : dotmotelabs.com") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+```
+
+
+```{r }
+sapflow_usda_hr_2022 %>% mutate(meanhr = mhr) %>%
+  filter(!meanhr =='NaN') %>% mutate(mr=as.numeric(meanhr)) %>%
+     mutate(node = as.factor(nodeid),Vh = log(mr),hr = hour(dateP)) %>%
+      filter(date(dateP) == "2021-12-14" ) %>%
+  #filter(nodeId %in% c("sapflow-dotmote-labs-2" ,"sapflow-dotmote-labs-3", "sapflow-dotmote-labs-4","sapflow-dotmote-labs-5")) %>%
+  ggplot() + geom_point(aes(dateP,1/mr,color=node) )  +
+  facet_grid(~node) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 19,20,25 and 36 USDA - Gravimetric Maize", caption="Source : dotmotelabs.com") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+```
+
+## change the column names
+
+```{r , echo=TRUE}
+colnames(sapflow_usda_hr_2022) <- c("meanHeatRatio" ,"endofheatpulse", "startofheatpulse", "nodeId" ,         "dateP" )
+
+```
+
+## Verify diurnal 
+
+
+## Do zero offsetting 
+
+Plot alternatively, but do offsetting by zeroing out the heatratio by using the values from hrs 0,1 and 2. Assumption being around hours (0-2), ideally no sapflow in plants.
+
+```{r , echo=TRUE}
+
+usda_19_offset <- sapflow_usda_hr_2022 %>%  mutate(meanhr = meanHeatRatio,hr = hour(dateP)) %>%
+  filter(!meanhr =='NaN') %>% 
+  filter(nodeId %in% c("sapflow-usda-19"))  %>% 
+  filter( hr %in% c(0,1,2)) %>% summarise(mhr = mean(meanhr))
+
+
+usda_20_offset <- sapflow_usda_hr_2022 %>%  mutate(meanhr = meanHeatRatio,hr = hour(dateP)) %>%
+  filter(!meanhr =='NaN') %>% 
+  filter(nodeId %in% c("sapflow-usda-20"))  %>%
+  filter( hr %in% c(0,1,2)) %>% summarise(mhr = mean(meanhr))
+
+usda_25_offset <- sapflow_usda_hr_2022 %>%  mutate(meanhr = meanHeatRatio,hr = hour(dateP)) %>%
+  filter(!meanhr =='NaN') %>% 
+  filter(nodeId %in% c("sapflow-usda-25"))  %>% 
+  filter( hr %in% c(0,1,2)) %>% summarise(mhr = mean(meanhr))
+
+usda_36_offset <- sapflow_usda_hr_2022 %>%  mutate(meanhr = meanHeatRatio,hr = hour(dateP)) %>%
+  filter(!meanhr =='NaN') %>% 
+  filter(nodeId %in% c("sapflow-usda-36"))  %>% 
+  filter( hr %in% c(0,1,2)) %>% summarise(mhr = mean(meanhr))
+
+
+sapflow_usda_2022_adjusted <- sapflow_usda_hr_2022
+sapflow_usda_2022_adjusted$hr = hour(sapflow_usda_hr_2022$dateP)
+sapflow_usda_2022_adjusted$mr <- 0
+
+sapflow_usda_2022_adjusted[sapflow_usda_2022_adjusted$nodeId == "sapflow-usda-19",]$mr =  sapflow_usda_2022_adjusted[sapflow_usda_hr_2022$nodeId == "sapflow-usda-19",]$meanHeatRatio + (1-as.numeric(usda_19_offset))
+
+sapflow_usda_2022_adjusted[sapflow_usda_2022_adjusted$nodeId == "sapflow-usda-20",]$mr =  sapflow_usda_2022_adjusted[sapflow_usda_hr_2022$nodeId == "sapflow-usda-20",]$meanHeatRatio + (1-as.numeric(usda_20_offset))
+
+sapflow_usda_2022_adjusted[sapflow_usda_2022_adjusted$nodeId == "sapflow-usda-25",]$mr =  sapflow_usda_2022_adjusted[sapflow_usda_hr_2022$nodeId == "sapflow-usda-25",]$meanHeatRatio + (1-as.numeric(usda_25_offset))
+
+sapflow_usda_2022_adjusted[sapflow_usda_2022_adjusted$nodeId == "sapflow-usda-36",]$mr =  sapflow_usda_2022_adjusted[sapflow_usda_hr_2022$nodeId == "sapflow-usda-36",]$meanHeatRatio + (1-as.numeric(usda_36_offset))
+
+
+
+#SE 
+sapflow_usda_2022_adjusted_se <- summarySE(sapflow_usda_2022_adjusted, measurevar="mr", groupvars=c("nodeId","hr"))
+
+
+
+
+# TODO VPD SE
+
+
+```
+
+## Plot the adjusted with original 
+
+```{r , echo=TRUE}
+
+sapflow_usda_hr_2022 %>% 
+  mutate(node = as.factor(nodeId),hr = hour(dateP)) %>%
+  mutate(mr = meanHeatRatio) %>%
+  ggplot() + geom_point(aes(hr,1/mr,color=node) )  +
+  facet_grid(~nodeId) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 7-10 USDA - Gravimetric Maize", caption="Source : dotmotelabs.com") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+
+```
+
+```{r , echo=TRUE}
+
+sapflow_usda_2022_adjusted %>% 
+  mutate(node = as.factor(nodeId),hr = hour(dateP)) %>%
+  ggplot() + geom_point(aes(hr,1/mr,color=node) )  +
+  facet_grid(~nodeId) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 7-10 USDA - Gravimetric Maize", caption="Source : dotmotelabs.com") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+
+```
+
+## Compare Original and Adjusted HR
+
+
+```{r , echo=TRUE}
+
+lm(sapflow_usda_2022_adjusted$meanHeatRatio~sapflow_usda_2022_adjusted$mr)
+
+sapflow_usda_2022_adjusted %>% 
+  ggplot() +
+  geom_point(aes(meanHeatRatio,mr,color=nodeId)) +
+  theme_minimal(base_size = 14)
+```
+
+## Heat pulse velocity
+
+```{r , echo=TRUE}
+
+sapflow_usda_2022_adjusted %>% mutate(yr = year(dateP),mth = month(dateP),dy  = day(dateP)) %>%
+  filter(yr %in% c(2021) & mth %in% c(12) & dy %in% c(14:28:28)) %>%
+  mutate (sv = log(1/mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+#        filter(date(dateP) == "2020-12-01" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=sv,color=nodeId)) +
+   geom_line(aes(x = dateP, y=sv,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  facet_wrap(.~dy) +
+  theme(legend.position = c(.17, .6))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
+## Smooth
+
+```{r , echo=TRUE}
+
+sapflow_usda_2022_adjusted %>% mutate(yr = year(dateP),mth = month(dateP),dy  = day(dateP)) %>%
+  filter(yr %in% c(2021) & mth %in% c(12) & dy %in% c(14:28:28)) %>%
+  mutate (sv = log(1/mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>%
+  #filter(date(dateP) == "2021-03-20" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = hr, y=sv,color=nodeId)) +
+  geom_smooth(aes(x = hr, y=sv,color=nodeId)) +
+    theme_minimal() + 
+  #scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  facet_wrap(~date(dateP) ) +
+
+  theme(legend.position = "bottom")+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+ggsave("figs/usda-graivimetric-Maize-vh-smoothed-2022.png", width = 20, height = 20, units = "cm")
+
+```
+
+## Heat pulse velocity 1 to 15
+
+```{r , echo=TRUE}
+
+sapflow_usda_2022_adjusted %>% mutate(yr = year(dateP),mth = month(dateP),dy  = day(dateP)) %>%
+  filter(yr %in% c(2021) & mth %in% c(12) & dy %in% c(14:28:28)) %>%
+  mutate (sv = log(1/mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>%
+#        filter(date(dateP) == "2020-12-01" ) %>%
+          filter(date(dateP) >= "2021-12-15" ) %>%
+   filter(date(dateP) <= "2021-12-24" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=sv,color=nodeId)) +
+   geom_line(aes(x = dateP, y=sv,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  theme(legend.position = c(.17, .6))+
+    labs(color='Node ID',x="Time (Date)") +
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+ggsave("figs/usda-graivimetric-Maize-stress-event-2022.png", width = 20, height = 20, units = "cm")
+
+```
+
+## Mass flow
+
+
+```{r , echo=TRUE}
+
+sapflow_usda_2022_adjusted %>% mutate(yr = year(dateP),mth = month(dateP),dy  = day(dateP)) %>%
+  filter(yr %in% c(2021) & mth %in% c(12) & dy %in% c(14:28:28)) %>%
+  mutate (sv = log(1/mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>%
+            filter(date(dateP) >= "2021-12-15" ) %>%
+   filter(date(dateP) <= "2021-12-24" ) %>%
+   mutate (vs =1.7 * sv )%>% 
+   mutate (flow = 3.14 * (1.5)^2 *vs )%>% 
+   #     filter(date(dateP) == "2021-03-18" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=flow,color=nodeId)) +
+   geom_line(aes(x = dateP, y=flow,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    #name = expression(~V[h] (cm~h^{"-1"}))
+       # Features of the first axis
+    name = expression("Sapflow rate"~J~(g~h^{"-1"})),
+  ) +
+  theme(legend.position = c(.17, .8))+
+  labs(color='Node ID',x="Time (Date)") +
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
+
+## Look at one day
+
+## Mass flow
+
+
+```{r , echo=TRUE}
+
+sapflow_usda_2022_adjusted %>% mutate(yr = year(dateP),mth = month(dateP),dy  = day(dateP)) %>%
+  filter(yr %in% c(2021) & mth %in% c(12) & dy %in% c(14:28:28)) %>%
+  mutate (sv = log(1/mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>%
+            filter(date(dateP) >= "2021-12-18" ) %>%
+   filter(date(dateP) <= "2021-12-18" ) %>%
+   mutate (vs =1.7 * sv )%>% 
+   mutate (flow = 3.14 * (1.5)^2 *vs )%>% mutate(ihr = 1/mr) %>% filter( ihr >= 1) %>%
+   #     filter(date(dateP) == "2021-03-18" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=flow,color=nodeId)) +
+   geom_line(aes(x = dateP, y=flow,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    #name = expression(~V[h] (cm~h^{"-1"}))
+       # Features of the first axis
+    name = expression("Sapflow rate"~J~(g~h^{"-1"})),
+  ) +
+  theme(legend.position = c(.17, .8))+
+  labs(color='Node ID',x="Time (Date)") +
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
+
+## Smooth
+
+## Mass flow
+
+
+```{r , echo=TRUE}
+
+sapflow_usda_2022_adjusted %>% mutate(yr = year(dateP),mth = month(dateP),dy  = day(dateP)) %>%
+  filter(yr %in% c(2021) & mth %in% c(12) & dy %in% c(14:28:28)) %>%
+  mutate (sv = log(1/mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>%
+            filter(date(dateP) >= "2021-12-18" ) %>%
+   filter(date(dateP) <= "2021-12-18" ) %>%
+   mutate (vs =1.7 * sv )%>% 
+   mutate (flow = 3.14 * (1.5)^2 *vs )%>% mutate(ihr = 1/mr) %>% filter( ihr >= 1) %>%
+   #     filter(date(dateP) == "2021-03-18" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=flow,color=nodeId)) +
+   geom_smooth(aes(x = dateP, y=flow,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    #name = expression(~V[h] (cm~h^{"-1"}))
+       # Features of the first axis
+    name = expression("Sapflow rate"~J~(g~h^{"-1"})),
+  ) +
+  theme(legend.position = c(.17, .8))+
+  labs(color='Node ID',x="Time (Date)") +
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
+# Multiple dates
+
+
+  
+```{r , echo=TRUE}
+
+sapflow_usda_2022_adjusted %>% mutate(yr = year(dateP),mth = month(dateP),dy  = day(dateP)) %>%
+  filter(yr %in% c(2021) & mth %in% c(12) & dy %in% c(14:28:28)) %>%
+  mutate (sv = log(1/mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>%
+            filter(date(dateP) >= "2021-12-15" ) %>%
+   filter(date(dateP) <= "2021-12-28" ) %>%
+   mutate (vs =1.7 * sv )%>% 
+   mutate (flow = 3.14 * (1.5)^2 *vs )%>% mutate(ihr = 1/mr) %>% filter( ihr >= 1) %>%
+   #     filter(date(dateP) == "2021-03-18" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=flow,color=nodeId)) +
+   geom_line(aes(x = dateP, y=flow,color=nodeId)) +
+    theme_minimal(base_size = 18) +
+  scale_x_datetime(date_breaks = "1 day",date_labels = "%b %d") + 
+  scale_y_continuous(
+    # Features of the first axis
+    #name = expression(~V[h] (cm~h^{"-1"}))
+       # Features of the first axis
+    name = expression("Sapflow rate"~J~(g~h^{"-1"})),
+  ) +
+  #  facet_wrap(~date(dateP) ) +
+  theme_minimal(base_size = 18) +
+  theme(legend.position = c(.17, .8))+
+  labs(color='Node ID',x="Time (Date)" , caption="Source : dotmotelabs.com") +
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+ggsave("figs/usda-graivimetric-Maize-flow-long-duration-2022.jpg", width = 35, height = 20, units = "cm")
+
+```
+
+
+```{r , echo=TRUE}
+
+sapflow_usda_2022_adjusted %>% mutate(yr = year(dateP),mth = month(dateP),dy  = day(dateP)) %>%
+  filter(yr %in% c(2021) & mth %in% c(12) & dy %in% c(14:28:28)) %>%
+  mutate (sv = log(1/mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>%
+            filter(date(dateP) >= "2021-12-15" ) %>%
+   filter(date(dateP) <= "2021-12-24" ) %>%
+   mutate (vs =1.7 * sv )%>% 
+   mutate (flow = 3.14 * (1.5)^2 *vs )%>%  mutate(ihr = 1/mr) %>% filter( ihr >= 1) %>%
+   #     filter(date(dateP) == "2021-03-18" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=1/mr,color=nodeId)) +
+   geom_line(aes(x = dateP, y=1/mr,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    #name = expression(~V[h] (cm~h^{"-1"}))
+       # Features of the first axis
+    name = expression("Mean Heat ratio"),
+  ) +
+  theme(legend.position = c(.17, .8))+
+  labs(color='Node ID',x="Time (Date)") +
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
+
+
+
+## Get the scale data - January 2022
+```{r , echo=TRUE}
+
+
+#gravimetric_all_22 <- readxl::read_xlsx('./data/Maize 4-16 to 4-30-21 Scale Data all MDT.xlsx')
+gravimetric_all_22_raw <- readxl::read_xlsx('./data/january-2022-gravimetric/Gravimetric Scale Data WinWedgeDDEMaize11-29-21 to 1-5-22-Mod.xlsm' )
+gravimetric_all_raw_22$time <- paste(lubridate::hour(gravimetric_all_raw$`Time (MDT)`),
+                                      lubridate::minute(gravimetric_all_raw$`Time (MDT)`),
+                                      lubridate::second(gravimetric_all_raw$`Time (MDT)`),sep = ":")
+gravimetric_all_raw_22$datetime <- lubridate::as_datetime(trimws(paste(lubridate::as_date(gravimetric_all_raw$Date),
+                                      gravimetric_all_raw$time," ")), tz="America/Denver")
+
+
+```
+
+## Get the scale data - January 2022
+```{r , echo=TRUE}
+
+
+#gravimetric_all_22 <- readxl::read_xlsx('./data/Maize 4-16 to 4-30-21 Scale Data all MDT.xlsx')
+gravimetric_all_22_raw <- read_csv('./data/january-2022-gravimetric/Gravimetric Scale Data WinWedgeDDEMaize11-29-21 to 1-5-22.csv')
+
+gravimetric_all_22_raw$time <- paste(lubridate::hour(gravimetric_all_22_raw$Time...4),
+                                      lubridate::minute(gravimetric_all_22_raw$Time...4),
+                                      lubridate::second(gravimetric_all_22_raw$Time...4),sep = ":")
+gravimetric_all_22_raw$datetime <- lubridate::as_datetime(trimws(paste(lubridate::as_date(gravimetric_all_22_raw$`Date...3`,format="%m/%d/%y"),
+                                      gravimetric_all_22_raw$time," ")), tz="America/Denver")
+
+
+```
+
+
+## Map the patterns for Sunny days with Cloudy/Rainy Days - Use Agrimet. Use Sapflow velocity curves. Maybe above a threshold of 10 are viable days. 
+
+```{r , echo=TRUE}
+
+gravimetric_all_22_raw %>% 
+  mutate (daten = date(datetime),weight = `Weight(kg)...5`,Dotmote=`Dotmote Gauge...1`)%>% 
+     filter(date(datetime) >= "2022-12-10" ) %>%
+       filter(date(datetime) <= "2022-12-17" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = datetime, y=weight,color=Dotmote)) +
+   geom_line(aes(x = datetime, y=weight,color=Dotmote)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~Weight~(Kg))
+
+  ) +
+  theme(legend.position = "bottom")+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+  labs(color="Node",x="Time (Date)")
+ggsave("figs/gravi_plot_22.png", width = 20, height = 20, units = "cm")
+
+```
+
+
+
+```{r , echo=TRUE}
+
+gravimetric_all_raw %>% 
+  mutate (daten = date(datetime),weight = `Weight(kg)`)%>% 
+     filter(date(datetime) >= "2021-04-28" ) %>%
+       filter(date(datetime) <= "2021-04-28" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = datetime, y=weight,color=Dotmote)) +
+   geom_line(aes(x = datetime, y=weight,color=Dotmote)) +
+    theme_minimal(base_size = 18) + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~Weight~(Kg))
+
+  ) +
+  theme(legend.position = "bottom")+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+  labs(color="Node",x="Time (Date)")
+ggsave("figs/gravi_plot_28.png", width = 20, height = 20, units = "cm")
+
+```
+
+```{r , echo=TRUE}
+sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+        filter(date(dateP) >= "2021-04-22" ) %>%
+       filter(date(dateP) <= "2021-04-28" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=sv,color=nodeId)) +
+   geom_line(aes(x = dateP, y=sv,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  theme(legend.position = "bottom")+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+  labs(color="Node",x="Time (Date)")
+ggsave("figs/sap_plot.png", width = 20, height = 20, units = "cm")
+```
+
+```{r , echo=TRUE}
+sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+        filter(date(dateP) >= "2021-04-22" ) %>%
+       filter(date(dateP) <= "2021-04-28" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_smooth(aes(x = dateP, y=sv,color=nodeId)) +
+   #geom_line(aes(x = dateP, y=sv,color=nodeId)) +
+    theme_minimal(base_size = 18) + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  theme(legend.position = "bottom")+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+  labs(color="Node",x="Time (Date)")
+ggsave("figs/sap_smmoth_plot.png", width = 28, height = 15, units = "cm")
+```
+
+```{r , echo=TRUE}
+
+usda_gravi <- gravimetric_all_raw %>% 
+  mutate (daten = date(datetime),weight = `Weight(kg)`)%>% 
+     filter(date(datetime) >= "2021-04-24" ) %>%
+       filter(date(datetime) <= "2021-04-24" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = datetime, y=weight,color=Dotmote)) +
+   geom_line(aes(x = datetime, y=weight,color=Dotmote)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~Weight~(Kg))
+
+  ) +
+  theme(legend.position = "bottom")+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+  labs(color="Node",x="Time (Date)")
+```
+
+```{r , echo=TRUE}
+
+sapflow_usda <- sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+       filter(date(dateP) == "2021-04-24" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=sv,color=nodeId)) +
+   geom_line(aes(x = dateP, y=sv,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  theme(legend.position = "bottom")+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+  labs(color="Node",x="Time (Date)")
+
+```
+
+```{r , echo=TRUE}
+library(patchwork)
+
+usda_gravi / sapflow_usda
+ggsave("figs/gravi_sapflow_usda.png", width = 20, height = 20, units = "cm")
+```
+
+# try the correlation
+```{r , echo=TRUE}
+
+usda_gravi_24 <- gravimetric_all_raw %>% 
+  mutate (daten = date(datetime),weight = `Weight(kg)`, 
+          hr = hour(datetime), mints = minute(datetime))%>% 
+     filter(date(datetime) >= "2021-04-24" ) %>%
+       filter(date(datetime) <= "2021-04-24" ) %>%
+  as.data.frame()
+
+usda_gravi_all <- gravimetric_all_raw %>% 
+  mutate (daten = date(datetime),weight = `Weight(kg)`, 
+          hr = hour(datetime), mints = minute(datetime))%>% 
+     filter(date(datetime) >= "2021-04-22" ) %>%
+       filter(date(datetime) <= "2021-04-28" ) %>%
+  as.data.frame()
+
+usda_gravi_24_8 <- gravimetric_all_raw %>% 
+  mutate (daten = date(datetime),weight = `Weight(kg)`, 
+          hr = hour(datetime), mints = minute(datetime))%>% 
+     filter(date(datetime) >= "2021-04-24" ) %>%
+       filter(date(datetime) <= "2021-04-24" ) %>%
+  filter(Dotmote =='USDA8') %>%
+  as.data.frame()
+
+ #
+sapflow_usda_24 <- sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+       filter(date(dateP) == "2021-04-24" ) %>%
+  as.data.frame()
+
+sapflow_usda_all <- sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+       filter(date(dateP) >= "2021-04-22" ) %>%
+     filter(date(dateP) <= "2021-04-28" ) %>%
+  as.data.frame()
+
+sapflow_usda_24_8 <- sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+       filter(date(dateP) == "2021-04-24" & nodeId=='sapflow-usda-8') %>%
+  as.data.frame()
+
+```
+
+```{r , echo=TRUE}
+
+msv_s8 <- sapflow_usda_24_8 %>% 
+   group_by(nodeId,hr) %>% 
+ # arrange(nodeId, hr, sv) %>% 
+  dplyr::summarise(m_sv = mean(sv)) %>%
+  as.data.frame()  
+
+msv_s_all <- sapflow_usda_all %>% 
+   group_by(daten,nodeId,hr) %>% 
+ # arrange(nodeId, hr, sv) %>% 
+  dplyr::summarise(m_sv = mean(sv)) %>%
+  as.data.frame()  
+
+msv_s_all_7 <- sapflow_usda_all %>% 
+  filter(nodeId=='sapflow-usda-7') %>%
+   group_by(daten,nodeId,hr) %>% 
+ # arrange(nodeId, hr, sv) %>% 
+  dplyr::summarise(m_sv = mean(sv)) %>%
+  as.data.frame()  
+
+msv_s_all_8 <- sapflow_usda_all %>% 
+  filter(nodeId=='sapflow-usda-8') %>%
+   group_by(daten,nodeId,hr) %>% 
+ # arrange(nodeId, hr, sv) %>% 
+  dplyr::summarise(m_sv = mean(sv)) %>%
+  as.data.frame()  
+
+msv_s_all_9 <- sapflow_usda_all %>% 
+  filter(nodeId=='sapflow-usda-9') %>%
+   group_by(daten,nodeId,hr) %>% 
+ # arrange(nodeId, hr, sv) %>% 
+  dplyr::summarise(m_sv = mean(sv)) %>%
+  as.data.frame()  
+
+msv_s_all_10 <- sapflow_usda_all %>% 
+  filter(nodeId=='sapflow-usda-10') %>%
+   group_by(daten,nodeId,hr) %>% 
+ # arrange(nodeId, hr, sv) %>% 
+  dplyr::summarise(m_sv = mean(sv)) %>%
+  as.data.frame()  
+
+
+usda_gravi_24_8_weight_hrly <-  usda_gravi_24_8 %>%
+  group_by(Dotmote,hr) %>%
+    dplyr::summarise(m_weight= mean(weight)) %>%
+as.data.frame()  
+
+usda_gravi_all_weight_hrly <-  usda_gravi_all %>%
+  group_by(daten,Dotmote,hr) %>%
+    dplyr::summarise(m_weight= mean(weight)) %>%
+as.data.frame()  
+
+  
+usda_gravi_24_8_weight_hrly_abs <- usda_gravi_24_8_weight_hrly %>%
+  group_by(Dotmote,hr) %>%
+  mutate(diff = abs(m_weight - lag(m_weight)) ) %>%
+  as.data.frame()
+
+usda_gravi_all_weight_hrly_abs <- usda_gravi_all_weight_hrly %>%
+  group_by(daten,Dotmote,hr) %>%
+  mutate(diff = abs(m_weight - lag(m_weight)) ) %>%
+  as.data.frame()
+
+usda_gravi_all_weight_hrly_abs_7 <- usda_gravi_all_weight_hrly %>%
+  filter(Dotmote == 'USDA7')  %>%
+  group_by(daten,Dotmote,hr) %>%
+  mutate(diff = abs(m_weight - lag(m_weight)) ) %>%
+  as.data.frame()
+
+usda_gravi_all_weight_hrly_abs_8 <- usda_gravi_all_weight_hrly %>%
+  filter(Dotmote == 'USDA8')  %>%
+  group_by(daten,Dotmote,hr) %>%
+  mutate(diff = abs(m_weight - lag(m_weight)) ) %>%
+  as.data.frame()
+
+usda_gravi_all_weight_hrly_abs_9 <- usda_gravi_all_weight_hrly %>%
+  filter(Dotmote == 'USDA9')  %>%
+  group_by(daten,Dotmote,hr) %>%
+  mutate(diff = abs(m_weight - lag(m_weight)) ) %>%
+  as.data.frame()
+
+usda_gravi_all_weight_hrly_abs_10 <- usda_gravi_all_weight_hrly %>%
+  filter(Dotmote == 'USDA10')  %>%
+  group_by(daten,Dotmote,hr) %>%
+  mutate(diff = abs(m_weight - lag(m_weight)) ) %>%
+  as.data.frame()
+
+
+ summary( lm(usda_gravi_24_8_weight_hrly_abs$diff ~ msv_s8$m_sv))
+```
+# Plot hourly but one day
+```{r , echo=FALSE}
+
+ggplot() +
+geom_point(data = usda_gravi_24_8_weight_hrly_abs, aes(x=hr,diff,color="GM")) +
+geom_point(data= msv_s8, aes(x=hr, y=m_sv/100 , color="SV"))  +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+```
+
+# Plot hourly but smooth it
+```{r , echo=FALSE}
+
+ggplot() +
+geom_smooth(data = usda_gravi_24_8_weight_hrly_abs, aes(x=hr,diff,color="GM")) +
+geom_smooth(data= msv_s8, aes(x=hr, y=m_sv/100 , color="SV"))  +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+```
+
+# Compare , but one node one day
+
+```{r , echo=FALSE}
+
+ggplot() +
+geom_point(data = usda_gravi_all_weight_hrly_abs_8[usda_gravi_all_weight_hrly_abs_8$daten=='2021-04-26',], aes(x=hr,diff,color=Dotmote)) +
+geom_point(data= msv_s_all_8[msv_s_all_8$daten=='2021-04-26',], aes(x=hr, y=m_sv/100 , color=nodeId))  +
+  facet_wrap(.~daten) +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+```
+# All days, one node Node 7 perf
+
+```{r , echo=FALSE}
+
+coeff = 100
+ggplot() +
+  geom_point(data = usda_gravi_all_weight_hrly_abs_7[usda_gravi_all_weight_hrly_abs_7$daten > '2021-04-23',], aes(x=hr,diff,color=Dotmote)) +
+  geom_point(data= msv_s_all_7[msv_s_all_7$daten > '2021-04-23', ], aes(x=hr, y=m_sv/coeff , color=nodeId))  +
+
+
+  facet_wrap(.~daten) +
+  scale_y_continuous(
+    
+    # Features of the first axis
+    name = "Flow (kg/hr)" ,
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*(coeff), name=expression(~V[h] (cm~h^{"-1"})))
+  ) +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+ggsave("figs/sap_gm_compare.png", width = 28, height = 15, units = "cm")
+```
+
+
+# All days, one node Node 8
+
+```{r , echo=FALSE}
+
+coeff = 100
+ggplot() +
+  geom_point(data = usda_gravi_all_weight_hrly_abs_8[usda_gravi_all_weight_hrly_abs_8$daten > '2021-04-23',], aes(x=hr,diff,color=Dotmote)) +
+  geom_point(data= msv_s_all_8[msv_s_all_8$daten > '2021-04-23', ], aes(x=hr, y=m_sv/coeff , color=nodeId))  +
+
+
+  facet_wrap(.~daten) +
+  scale_y_continuous(
+    
+    # Features of the first axis
+    name = "Flow (kg/hr)" ,
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*(coeff), name=expression(~V[h] (cm~h^{"-1"})))
+  ) +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+```
+
+
+# All days, one node Node 9
+
+```{r , echo=FALSE}
+
+coeff = 100
+ggplot() +
+  geom_point(data = usda_gravi_all_weight_hrly_abs_9[usda_gravi_all_weight_hrly_abs_9$daten > '2021-04-23',], aes(x=hr,diff,color=Dotmote)) +
+  geom_point(data= msv_s_all_9[msv_s_all_9$daten > '2021-04-23', ], aes(x=hr, y=m_sv/coeff , color=nodeId))  +
+
+
+  facet_wrap(.~daten) +
+  scale_y_continuous(
+    
+    # Features of the first axis
+    name = "Flow (kg/hr)" ,
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*(coeff), name=expression(~V[h] (cm~h^{"-1"})))
+  ) +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+```
+
+```{r , echo=FALSE}
+
+coeff = 100
+ggplot() +
+  geom_point(data = usda_gravi_all_weight_hrly_abs_10[usda_gravi_all_weight_hrly_abs_10$daten > '2021-04-23',], aes(x=hr,diff,color=Dotmote)) +
+  geom_point(data= msv_s_all_10[msv_s_all_10$daten > '2021-04-23', ], aes(x=hr, y=m_sv/coeff , color=nodeId))  +
+
+
+  facet_wrap(.~daten) +
+  scale_y_continuous(
+    
+    # Features of the first axis
+    name = "Flow (kg/hr)" ,
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*(coeff), name=expression(~V[h] (cm~h^{"-1"})))
+  ) +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+```
+
+Plot the points
+```{r , echo=FALSE}
+
+combined_byDay_SF <- msv_s_all_10[msv_s_all_10$daten > '2021-04-23', ]
+combined_byDay_SF <- rbind(combined_byDay_SF,msv_s_all_7[msv_s_all_7$daten > '2021-04-23', ])
+combined_byDay_SF <- rbind(combined_byDay_SF,msv_s_all_8[msv_s_all_8$daten > '2021-04-23', ])
+combined_byDay_SF <- rbind(combined_byDay_SF,msv_s_all_9[msv_s_all_9$daten > '2021-04-23', ])
+
+combined_byDay_GM <- usda_gravi_all_weight_hrly_abs_10[usda_gravi_all_weight_hrly_abs_10$daten > '2021-04-23',]
+combined_byDay_GM <- rbind(combined_byDay_GM, usda_gravi_all_weight_hrly_abs_7[usda_gravi_all_weight_hrly_abs_7$daten > '2021-04-23',])
+combined_byDay_GM <- rbind(combined_byDay_GM, usda_gravi_all_weight_hrly_abs_8[usda_gravi_all_weight_hrly_abs_8$daten > '2021-04-23',])
+combined_byDay_GM <- rbind(combined_byDay_GM, usda_gravi_all_weight_hrly_abs_9[usda_gravi_all_weight_hrly_abs_9$daten > '2021-04-23',])
+
+combined_byDay_SF$node <- ''
+combined_byDay_SF[combined_byDay_SF$nodeId =='sapflow-usda-10',]$node = 'USDA10'
+combined_byDay_SF[combined_byDay_SF$nodeId =='sapflow-usda-7',]$node = 'USDA7'
+combined_byDay_SF[combined_byDay_SF$nodeId =='sapflow-usda-8',]$node = 'USDA8'
+combined_byDay_SF[combined_byDay_SF$nodeId =='sapflow-usda-9',]$node = 'USDA9'
+
+colors <-  RColorBrewer::brewer.pal(4,name="Spectral")
+
+coeff = 100
+ggplot() +
+   geom_smooth(data= combined_byDay_GM, aes(hr,diff, color=as.factor(Dotmote),linetype = "Scale"),se=FALSE ,)+ 
+    geom_smooth(data= combined_byDay_SF, aes(hr,m_sv/coeff, color=as.factor(node),linetype = "Sapflow"),se=FALSE,
+                arrow = arrow(angle = 15, ends = "both", type = "closed"))+
+   scale_y_continuous(
+    
+    # Features of the first axis
+    name = "Flow (kg/hr)" ,
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*(coeff), name=expression(~V[h] (cm~h^{"-1"})))
+  ) +
+  scale_colour_brewer(palette = "Set1")+
+  scale_linetype_manual("Method",values=c("Scale"=1,"Sapflow"=2)) +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+ggsave("figs/sap_gm_hourly_alldates.png", width = 28, height = 15, units = "cm")
+
+```
+```{r , echo=FALSE}
+ 
+ggplot() +
+   geom_smooth(data= combined_byDay_GM, aes(hr,diff, color=as.factor(Dotmote),linetype = "Scale"),se=TRUE ,)+ 
+    geom_smooth(data= combined_byDay_SF, aes(hr,m_sv/coeff, color=as.factor(node),linetype = "Sapflow"),se=TRUE,
+                arrow = arrow(angle = 15, ends = "both", type = "closed"))+
+   scale_y_continuous(
+    
+    # Features of the first axis
+    name = "Flow (kg/hr)" ,
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*(coeff), name=expression(~V[h] (cm~h^{"-1"})))
+  ) +
+  scale_colour_brewer(palette = "Set1")+
+  scale_linetype_manual("Method",values=c("Scale"=1,"Sapflow"=2)) +
+  theme_minimal(base_size = 18) +
+  labs(color="",x=" Time (Hour)" , y="")
+ggsave("figs/sap_gm_hourly_alldates_se.png", width = 28, height = 15, units = "cm")
+
+```
+
+```{r , echo=FALSE}
+
+ggplot() +
+   geom_smooth(data= combined_byDay_GM, aes(hr,diff, color=as.factor(Dotmote),linetype = "Scale"),se=FALSE ,)+ 
+    geom_smooth(data= combined_byDay_SF, aes(hr,m_sv/coeff, color=as.factor(node),linetype = "Sapflow"),se=FALSE,
+                arrow = arrow(angle = 15, ends = "both", type = "closed"))+
+  facet_grid(.~daten) +
+   scale_y_continuous(
+    
+    # Features of the first axis
+    name = "Flow (kg/hr)" ,
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*(coeff), name=expression(~V[h] (cm~h^{"-1"})))
+  ) +
+  scale_colour_brewer(palette = "Set1")+
+  scale_linetype_manual("Method",values=c("Scale"=1,"Sapflow"=2)) +
+  theme_minimal(base_size = 18) +
+  theme(legend.position = "bottom") +
+  labs(color="",x=" Time (Hour)" , y="")
+ggsave("figs/sap_gm_hourly_alldates_seoff_day.png", width = 28, height = 15, units = "cm")
+
+```
+
+
+```{r , echo=FALSE}
+# Adjust the Sapflow
+
+coeff <- 1
+
+msv_s8 %>% 
+  ggplot() +
+   geom_point(aes(x = hr, y=m_sv,color=nodeId)) +
+   geom_line(aes(x = hr, y=m_sv,color=nodeId)) +
+   geom_point( data=usda_gravi_24_8_weight_hrly,aes(x=hr,y=m_weight / coeff,color='Weigh')) +
+  #geom_smooth(aes(dateP,sv),span = 0.1, se = FALSE) +
+  #geom_smooth(aes(x = dateP, y=meanhr,color=as.factor(nodeID)),method = loess, span="0.0008",se = TRUE)  +
+    theme_minimal() + 
+  #scale_x_datetime(date_minor_breaks = "1 day") + 
+  # labs(subtitle="",title=expression(~italic(Corn~~USDA)), y =expression(~V[h] (cm~h^{"-1"})),x="Date",
+  #              colour = "Node ID") +
+  # Divide by 10 to get the same range than the temperature
+  
+  scale_y_continuous(
+    
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"})),
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*coeff, name="Flow (g/s)")
+  ) +
+  theme(legend.position = c(.17, 1))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+```
+
+
+
+```{r , echo=TRUE}
+
+sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP))%>% 
+       #filter(date(dateP) == "2021-04-24" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = dateP, y=sv,color=nodeId)) +
+   geom_line(aes(x = dateP, y=sv,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  theme(legend.position = c(.17, .6))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
+
+
+
+```{r , echo=TRUE}
+
+ gravimetric_all_raw %>% 
+  mutate (daten = date(datetime),weight = `Weight(kg)`,day= day(datetime),hour=hour(datetime))%>% 
+     filter(date(datetime) >= "2021-04-22" ) %>%
+       filter(date(datetime) <= "2021-04-28" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = hour, y=weight,color=Dotmote)) +
+   geom_line(aes(x = hour, y=weight,color=Dotmote)) +
+    theme_minimal() + 
+  #scale_x_datetime(date_minor_breaks = "1 day") + 
+  facet_wrap(~day) +
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~Weight~(Kg))
+
+  ) +
+  theme(legend.position="bottom")+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+  labs(color="Node",x=" Time (Hour)")
+
+ gravitim <- gravimetric_all_raw %>% 
+  mutate (daten = date(datetime),weight = `Weight(kg)`,day= day(datetime),hour=hour(datetime))%>% 
+     filter(date(datetime) >= "2021-04-22" ) %>%
+       filter(date(datetime) <= "2021-04-28" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = hour, y=weight,color=Dotmote)) +
+   geom_line(aes(x = hour, y=weight,color=Dotmote)) +
+    theme_minimal() + 
+  #scale_x_datetime(date_minor_breaks = "1 day") + 
+  facet_wrap(~day) +
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~Weight~(Kg))
+
+  ) +
+  theme(legend.position="bottom")+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+  labs(color="Node",x=" Time (Hour)")
+
+```
+
+
+
+```{r , echo=TRUE}
+
+sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP), 
+          day=day(dateP),hour=hour(dateP))%>% 
+       #filter(date(dateP) == "2021-04-24" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+       filter(date(dateP)  >= "2021-04-22" ) %>%
+       filter(date(dateP)  <= "2021-04-28" ) %>%
+  ggplot() +
+   geom_point(aes(x = hour, y=sv,color=nodeId)) +
+   geom_line(aes(x = hour, y=sv,color=nodeId)) +
+    theme_minimal() + 
+  #scale_x_datetime(date_minor_breaks = "1 day") + 
+facet_wrap(~day)+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  theme(legend.position="bottom")+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+  labs(color="Node",x="Time (Hour)")
+
+saptim <-  sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP), 
+          day=day(dateP),hour=hour(dateP))%>% 
+       #filter(date(dateP) == "2021-04-24" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+       filter(date(dateP)  >= "2021-04-22" ) %>%
+       filter(date(dateP)  <= "2021-04-28" ) %>%
+  ggplot() +
+   geom_point(aes(x = hour, y=sv,color=nodeId)) +
+   geom_line(aes(x = hour, y=sv,color=nodeId)) +
+    theme_minimal() + 
+  #scale_x_datetime(date_minor_breaks = "1 day") + 
+facet_wrap(~day)+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  theme(legend.position="bottom")+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+  labs(color="Node",x="Time (Hour)")
+
+```
+
+```{r , echo=TRUE}
+library(patchwork)
+
+gravitim / saptim
+ggsave("figs/gravi_sapflow_timeseries_usda.png", width = 20, height = 20, units = "cm")
+```
+
+
+# Explore relationship between Sapflow and Gravimetric 
+
+```{r , echo=TRUE}
+
+blockDataSapflow <- sapflow_usda_2021_adjusted %>% 
+  mutate (sv = log(mr) *3600 * (0.0025/0.6) ,daten = date(dateP), 
+          day=day(dateP),hour=hour(dateP))%>% 
+       #filter(date(dateP) == "2021-04-24" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+       filter(date(dateP)  >= "2021-04-22" ) %>%
+       filter(date(dateP)  <= "2021-04-28" ) %>% 
+  as.data.frame()
+blockDataGavimetric<- gravimetric_all_raw %>% 
+  mutate (daten = date(datetime),weight = `Weight(kg)`,day= day(datetime),hour=hour(datetime))%>% 
+     filter(date(datetime) >= "2021-04-22" ) %>%
+       filter(date(datetime) <= "2021-04-28" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+   as.data.frame()
+
+# Take values from 6 to 18 for all the plants
+filteredSapflow <- blockDataSapflow %>% 
+  #filter(hour %in% c(6:18)) %>% 
+  dplyr::group_by(day,hour) %>%
+  dplyr::summarize(mhr=mean(mr)) %>%
+  select(day,hour,mhr) %>%
+  as.data.frame()
+filteredGravimetric <- blockDataGavimetric %>% 
+  #filter(hour %in% c(6:18)) %>% 
+    dplyr::group_by(day,hour) %>%
+  dplyr::summarize(mw=mean(weight)) %>%
+  select(day,hour,mw) %>%
+  as.data.frame()
+```
+
+
+```{r , echo=TRUE}
+
+combinedFiltered <-  filteredSapflow
+combinedFiltered$mw <- filteredGravimetric[c(1:167),]$mw
+
+# Take values from 6 to 18 for all the plants
+ggplot() +
+  geom_point(data=combinedFiltered,aes(mw,mhr,color=as.factor(hour))) +
+  theme_minimal(base_size = 14)+ 
+  labs(x="Weight (kg)", y="Vh") +
+  labs(color="Hour")
+ggsave("figs/gravi_sapflow_compare.png", width = 20, height = 20, units = "cm")
+```
+
+
+```{r , echo=TRUE}
+summary(lm(data = combinedFiltered, mhr~mw))
+```
+
+# check the temp
+
+```{r , echo=TRUE}
+climate_gravimetric_all <- readxl::read_xlsx('./data/Greenhouse 5 min data 4-16 to 4-30-21 Maize.xlsx')
+head(climate_gravimetric_all)
+climate_gravimetric_all$time <- paste(lubridate::hour(climate_gravimetric_all$Time),
+                                      lubridate::minute(climate_gravimetric_all$Time),
+                                      lubridate::second(climate_gravimetric_all$Time),sep = ":")
+climate_gravimetric_all$datetime <- lubridate::as_datetime(trimws(paste(lubridate::as_date(climate_gravimetric_all$Date),
+                                      climate_gravimetric_all$time," ")), tz="America/Denver")
+
+```
+
+# plot for the day
+
+```{r , echo=TRUE}
+
+climate_gravimetric_all %>% 
+  mutate (daten = date(datetime),tempF = `Climate Temperature(°F)`)%>% 
+     filter(date(datetime) >= "2021-04-22" ) %>%
+       filter(date(datetime) <= "2021-04-28" ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = datetime, y=tempF)) +
+   geom_line(aes(x = datetime, y=tempF)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~Temperature~(F))
+
+  ) +
+  theme(legend.position = "bottom")+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+  labs(color="Node",x="Time (Date)")
+ggsave("figs/gravi_climate.png", width = 20, height = 20, units = "cm")
+
+```
+
+
+VPD
+```{r , echo=FALSE}
+
+#(0.611 * 10^ (7.5 * T / (237 +T)) * (1− RH/100)
+ 
+climate_gravimetric_all %>% 
+  mutate (daten = date(datetime),tempF = `Climate Temperature(°F)`,rh = `Climate Humidity(%Rh)`)%>% 
+     filter(date(datetime) >= "2021-04-22" ) %>%
+       filter(date(datetime) <= "2021-04-28" ) %>%
+  mutate(vpd = (0.611 * 10^((7.5 * tempF )/(237 + tempF)) * ( 1- (rh/100)))) %>% 
+  ggplot( aes(x=datetime, y=vpd))  +
+    geom_line(color='red') +
+    geom_point() +
+    labs(x="Time (Date)", y="VPD (kPa)",colour = "Hibiscus",title = "") +
+   theme_minimal(base_size = 18) +
+  theme(legend.position = c(1, 0.0050))
+
+ggsave("figs/gravi_climate_vpd.png", width = 20, height = 20, units = "cm")
+```
+
+```{r , echo=FALSE}
+
+#(0.611 * 10^ (7.5 * T / (237 +T)) * (1− RH/100)
+ 
+climate_gravimetric_all %>% 
+  mutate (daten = date(datetime),tempF = `Climate Temperature(°F)`,
+          rh = `Climate Humidity(%Rh)`,
+          sr= `TCAP; Broadcast Information; Outdoor Light Energy(W/m²)`)%>% 
+     filter(date(datetime) >= "2021-04-22" ) %>%
+       filter(date(datetime) <= "2021-04-28" ) %>%
+  mutate(vpd = (0.611 * 10^((7.5 * tempF )/(237 + tempF)) * ( 1- (rh/100)))) %>% 
+  ggplot( aes(x=datetime, y=sr))  +
+    geom_line(color='red') +
+    geom_point() +
+    labs(x="Time (Date)", y="Outdoor Light Energy(W/m²)",colour = "Hibiscus",title = "") +
+   theme_minimal(base_size = 18) +
+  theme(legend.position = c(1, 0.0050))
+
+ggsave("figs/gravi_climate_energy.png", width = 20, height = 20, units = "cm")
+```
