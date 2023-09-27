@@ -497,7 +497,116 @@ guides(fill = guide_legend(keywidth = 1, keyheight = 1),
 
 ```
 
+# check the remaining 
 
+
+```{r pressure, echo=FALSE}
+sapflow_usda_2023_hr_50_repro<-  read_csv('./data/usda/reprocessed-2023/sapflow-usda-50.csv')
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2023_hr_50_repro$dateP <- as_datetime(sapflow_usda_2023_hr_50_repro$date, tz="America/Denver")
+
+sapflow_usda_2023_hr_51_repro<-  read_csv('./data/usda/reprocessed-2023/sapflow-usda-51.csv')
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2023_hr_51_repro$dateP <- as_datetime(sapflow_usda_2023_hr_51_repro$date, tz="America/Denver")
+
+sapflow_usda_2023_hr_52_repro<-  read_csv('./data/usda/reprocessed-2023/sapflow-usda-52.csv')
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2023_hr_52_repro$dateP <- as_datetime(sapflow_usda_2023_hr_52_repro$date, tz="America/Denver")
+
+
+sapflow_usda_2023_hr_57_repro<-  read_csv('./data/usda/reprocessed-2023/sapflow-usda-57.csv')
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2023_hr_57_repro$dateP <- as_datetime(sapflow_usda_2023_hr_57_repro$date, tz="America/Denver")
+
+sapflow_usda_2023_hr_58_repro<-  read_csv('./data/usda/reprocessed-2023/sapflow-usda-58.csv')
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2023_hr_58_repro$dateP <- as_datetime(sapflow_usda_2023_hr_58_repro$date, tz="America/Denver")
+
+sapflow_usda_2023_hr_59_repro<-  read_csv('./data/usda/reprocessed-2023/sapflow-usda-59.csv')
+# Tell R studio that timestamp is already in MDT
+sapflow_usda_2023_hr_59_repro$dateP <- as_datetime(sapflow_usda_2023_hr_59_repro$date, tz="America/Denver")
+
+```
+
+```{r , echo=TRUE}
+
+sapflow_usda_2023_hr_50_repro %>% 
+  mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
+  mutate(mr = meanHeatRatio) %>%
+    #filter(dy %in% c(14,15,16,17)) %>%
+  ggplot() + geom_point(aes(hr,1/mr,color=node) )  +
+ facet_grid(~dy) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 50 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+
+```
+```{r , echo=TRUE}
+
+sapflow_usda_2023_hr_51_repro %>% 
+  mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
+  mutate(mr = meanHeatRatio) %>%
+    #filter(dy %in% c(14,15,16,17)) %>%
+  ggplot() + geom_point(aes(dy,1/mr,color=node) )  +
+ facet_grid(~dy) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 51 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+
+```
+```{r , echo=TRUE}
+
+sapflow_usda_2023_hr_52_repro %>% 
+  mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
+  mutate(mr = meanHeatRatio) %>%
+    #filter(dy %in% c(14,15,16,17)) %>%
+  ggplot() + geom_point(aes(dy,1/mr,color=node) )  +
+  facet_grid(~dy) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 52 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+
+```
+```{r , echo=TRUE}
+
+sapflow_usda_2023_hr_57_repro %>% 
+  mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
+  mutate(mr = meanHeatRatio) %>%
+    #filter(dy %in% c(14,15,16,17)) %>%
+  ggplot() + geom_point(aes(dy,1/mr,color=node) )  +
+  facet_grid(~dy) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 57 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+
+```
+```{r , echo=TRUE}
+
+sapflow_usda_2023_hr_58_repro %>% 
+  mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
+  mutate(mr = meanHeatRatio) %>%
+    #filter(dy %in% c(14,15,16,17)) %>%
+  ggplot() + geom_point(aes(dy,1/mr,color=node) )  +
+  facet_grid(~dy) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 58 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+
+```
+
+```{r , echo=TRUE}
+
+sapflow_usda_2023_hr_59_repro %>% 
+  mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
+  mutate(mr = meanHeatRatio) %>%
+    #filter(dy %in% c(14,15,16,17)) %>%
+  ggplot() + geom_point(aes(dy,1/mr,color=node) )  +
+  facet_grid(~dy) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 59 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+
+```
 
 ## Get the scale data - January 2022
 ```{r , echo=TRUE}

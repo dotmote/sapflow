@@ -630,6 +630,23 @@ usda_gravi_all_weight_hrly_abs_10 <- usda_gravi_all_weight_hrly %>%
 
  summary( lm(usda_gravi_24_8_weight_hrly_abs$diff ~ msv_s8$m_sv))
 ```
+
+# All the points for a week - Node 8
+
+```{r , echo=FALSE}
+
+msv_s_all_8 %>% 
+  mutate(daye = lubridate::day(daten)) %>%
+  filter(daye %in% c(27)) %>%
+           ggplot() +
+geom_smooth(data = usda_gravi_all_weight_hrly_abs_8[usda_gravi_all_weight_hrly_abs_8$daten == c('2021-04-27'),], aes(x=hr,diff,color="GM")) +
+geom_smooth(data= msv_s_all_8[msv_s_all_8$daten == c('2021-04-27'),], aes(x=hr, y=m_sv/100 , color="SV"))  +
+  theme_minimal(base_size = 18) +
+  facet_grid(~daye)+
+  labs(color="",x=" Time (Hour)" , y="")
+```
+
+
 # Plot hourly but one day
 ```{r , echo=FALSE}
 
@@ -840,6 +857,33 @@ ggplot() +
 ggsave("figs/sap_gm_hourly_alldates_seoff_day.png", width = 28, height = 15, units = "cm")
 
 ```
+#With error bars
+
+```{r , echo=FALSE}
+
+ggplot() +
+   geom_smooth(data= combined_byDay_GM, aes(hr,diff, color=as.factor(Dotmote),linetype = "Scale"),se=FALSE ,)+ 
+    geom_smooth(data= combined_byDay_SF, aes(hr,m_sv/coeff, color=as.factor(node),linetype = "Sapflow"),se=FALSE,
+                arrow = arrow(angle = 15, ends = "both", type = "closed"))+
+  facet_grid(.~daten) +
+   scale_y_continuous(
+    
+    # Features of the first axis
+    name = "Flow (kg/hr)" ,
+    
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*(coeff), name=expression(~V[h] (cm~h^{"-1"})))
+  ) +
+  scale_colour_brewer(palette = "Set1")+
+  scale_linetype_manual("Method",values=c("Scale"=1,"Sapflow"=2)) +
+  theme_minimal(base_size = 18) +
+  theme(legend.position = "bottom") +
+  labs(color="",x=" Time (Hour)" , y="")
+ggsave("figs/sap_gm_hourly_alldates_seoff_day-errorbars.png", width = 28, height = 15, units = "cm")
+
+```
+
+
 
 
 ```{r , echo=FALSE}
@@ -1109,7 +1153,7 @@ VPD
  
 climate_gravimetric_all %>% 
   mutate (daten = date(datetime),tempF = `Climate Temperature(°F)`,rh = `Climate Humidity(%Rh)`)%>% 
-     filter(date(datetime) >= "2021-04-22" ) %>%
+     filter(date(datetime) >= "2021-04-24" ) %>%
        filter(date(datetime) <= "2021-04-28" ) %>%
   mutate(vpd = (0.611 * 10^((7.5 * tempF )/(237 + tempF)) * ( 1- (rh/100)))) %>% 
   ggplot( aes(x=datetime, y=vpd))  +
@@ -1121,6 +1165,34 @@ climate_gravimetric_all %>%
 
 ggsave("figs/gravi_climate_vpd.png", width = 20, height = 20, units = "cm")
 ```
+
+#VPD
+```{r , echo=FALSE}
+
+#(0.611 * 10^ (7.5 * T / (237 +T)) * (1− RH/100)
+#  VPD = (1 − RH∕100) × 0.6108 × EXP (17.27×T )/(237.3+T) 
+#[610.7x10^(7.5T)/(237.3+T)/1000] x RH/100
+
+
+climate_gravimetric_all %>% 
+  mutate (daten = date(datetime),tempF = `Climate Temperature(°F)`,rh = `Climate Humidity(%Rh)`)%>% 
+     filter(date(datetime) >= "2021-04-24" ) %>%
+       filter(date(datetime) <= "2021-04-28" ) %>%
+  mutate(tempC = weathermetrics::fahrenheit.to.celsius(tempF)) %>%
+  mutate(vpd = (0.611 * 10^((7.5 * tempF )/(237 + tempF)) * ( 1- (rh/100)))) %>% 
+  mutate(vpdredo = 3.386 * (tempF/100)^(17.863-9621/(rh+460))) %>% 
+  mutate(vpdr = (0.6108* exp((17.2 * tempC )/(237 + tempF)) * ( 1- (rh/100)))) %>% 
+  ggplot( )  +
+#geom_line(aes(x=datetime, y=vpd),color='red') +
+#    geom_point(aes(x=datetime, y=vpd)) +
+    geom_point(aes(x=datetime, y=vpdr)) +
+    labs(x="Time (Date)", y="VPD (kPa)",colour = "Hibiscus",title = "",ylim=c(0,10)) +
+   theme_minimal(base_size = 18) +
+  theme(legend.position = c(1, 0.0050))
+
+ggsave("figs/gravi_climate_vpd-studyperiod.png", width = 20, height = 20, units = "cm")
+```
+
 
 ```{r , echo=FALSE}
 
