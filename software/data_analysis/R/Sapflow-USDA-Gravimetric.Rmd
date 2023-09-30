@@ -835,8 +835,8 @@ ggsave("figs/sap_gm_hourly_alldates_se.png", width = 28, height = 15, units = "c
 ```
 
 ```{r , echo=FALSE}
-
-ggplot() +
+coeff = 100
+sap_gm_hourly_alldates_seoff_day <-ggplot() +
    geom_smooth(data= combined_byDay_GM, aes(hr,diff, color=as.factor(Dotmote),linetype = "Scale"),se=FALSE ,)+ 
     geom_smooth(data= combined_byDay_SF, aes(hr,m_sv/coeff, color=as.factor(node),linetype = "Sapflow"),se=FALSE,
                 arrow = arrow(angle = 15, ends = "both", type = "closed"))+
@@ -854,6 +854,7 @@ ggplot() +
   theme_minimal(base_size = 18) +
   theme(legend.position = "bottom") +
   labs(color="",x=" Time (Hour)" , y="")
+sap_gm_hourly_alldates_seoff_day
 ggsave("figs/sap_gm_hourly_alldates_seoff_day.png", width = 28, height = 15, units = "cm")
 
 ```
@@ -1174,7 +1175,7 @@ ggsave("figs/gravi_climate_vpd.png", width = 20, height = 20, units = "cm")
 #[610.7x10^(7.5T)/(237.3+T)/1000] x RH/100
 
 
-climate_gravimetric_all %>% 
+gravi_climate_vpd_studyperiod<- climate_gravimetric_all %>% 
   mutate (daten = date(datetime),tempF = `Climate Temperature(°F)`,rh = `Climate Humidity(%Rh)`)%>% 
      filter(date(datetime) >= "2021-04-24" ) %>%
        filter(date(datetime) <= "2021-04-28" ) %>%
@@ -1189,8 +1190,18 @@ climate_gravimetric_all %>%
     labs(x="Time (Date)", y="VPD (kPa)",colour = "Hibiscus",title = "",ylim=c(0,10)) +
    theme_minimal(base_size = 18) +
   theme(legend.position = c(1, 0.0050))
-
+gravi_climate_vpd_studyperiod
 ggsave("figs/gravi_climate_vpd-studyperiod.png", width = 20, height = 20, units = "cm")
+```
+
+#combine te sv/flow and VPD plot
+
+```{r , echo=FALSE}
+
+(sap_gm_hourly_alldates_seoff_day/gravi_climate_vpd_studyperiod) +
+   plot_annotation(tag_levels = 'A') +
+  plot_layout() 
+  ggsave("figs/sap_gm_hourly_alldates_seoff_dayandvpd.png", width = 28, height = 15, units = "cm")
 ```
 
 

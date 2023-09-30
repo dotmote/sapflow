@@ -533,7 +533,7 @@ sapflow_usda_2023_hr_59_repro$dateP <- as_datetime(sapflow_usda_2023_hr_59_repro
 sapflow_usda_2023_hr_50_repro %>% 
   mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
   mutate(mr = meanHeatRatio) %>%
-    #filter(dy %in% c(14,15,16,17)) %>%
+    filter(dy %in% c(14,15,16)) %>%
   ggplot() + geom_point(aes(hr,1/mr,color=node) )  +
  facet_grid(~dy) +
   theme_classic() + labs(x="Date",y="Mean HR", title = "Node 50 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
@@ -546,8 +546,8 @@ sapflow_usda_2023_hr_50_repro %>%
 sapflow_usda_2023_hr_51_repro %>% 
   mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
   mutate(mr = meanHeatRatio) %>%
-    #filter(dy %in% c(14,15,16,17)) %>%
-  ggplot() + geom_point(aes(dy,1/mr,color=node) )  +
+    filter(dy %in% c(14,15,16)) %>%
+  ggplot() + geom_point(aes(hr,1/mr,color=node) )  +
  facet_grid(~dy) +
   theme_classic() + labs(x="Date",y="Mean HR", title = "Node 51 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
@@ -559,8 +559,8 @@ sapflow_usda_2023_hr_51_repro %>%
 sapflow_usda_2023_hr_52_repro %>% 
   mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
   mutate(mr = meanHeatRatio) %>%
-    #filter(dy %in% c(14,15,16,17)) %>%
-  ggplot() + geom_point(aes(dy,1/mr,color=node) )  +
+    filter(dy %in% c(14,15,16)) %>%
+  ggplot() + geom_point(aes(hr,1/mr,color=node) )  +
   facet_grid(~dy) +
   theme_classic() + labs(x="Date",y="Mean HR", title = "Node 52 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
@@ -572,8 +572,8 @@ sapflow_usda_2023_hr_52_repro %>%
 sapflow_usda_2023_hr_57_repro %>% 
   mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
   mutate(mr = meanHeatRatio) %>%
-    #filter(dy %in% c(14,15,16,17)) %>%
-  ggplot() + geom_point(aes(dy,1/mr,color=node) )  +
+    filter(dy %in% c(14,15,16)) %>%
+  ggplot() + geom_point(aes(hr,1/mr,color=node) )  +
   facet_grid(~dy) +
   theme_classic() + labs(x="Date",y="Mean HR", title = "Node 57 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
@@ -585,8 +585,8 @@ sapflow_usda_2023_hr_57_repro %>%
 sapflow_usda_2023_hr_58_repro %>% 
   mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
   mutate(mr = meanHeatRatio) %>%
-    #filter(dy %in% c(14,15,16,17)) %>%
-  ggplot() + geom_point(aes(dy,1/mr,color=node) )  +
+    filter(dy %in% c(14,15,16,17)) %>%
+  ggplot() + geom_point(aes(hr,1/mr,color=node) )  +
   facet_grid(~dy) +
   theme_classic() + labs(x="Date",y="Mean HR", title = "Node 58 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
@@ -599,8 +599,8 @@ sapflow_usda_2023_hr_58_repro %>%
 sapflow_usda_2023_hr_59_repro %>% 
   mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
   mutate(mr = meanHeatRatio) %>%
-    #filter(dy %in% c(14,15,16,17)) %>%
-  ggplot() + geom_point(aes(dy,1/mr,color=node) )  +
+    filter(dy %in% c(14,15,16,17)) %>%
+  ggplot() + geom_point(aes(hr,1/mr,color=node) )  +
   facet_grid(~dy) +
   theme_classic() + labs(x="Date",y="Mean HR", title = "Node 59 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
