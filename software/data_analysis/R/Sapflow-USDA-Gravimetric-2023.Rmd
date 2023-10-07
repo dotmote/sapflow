@@ -1,5 +1,5 @@
 ---
-title: "Sapflow - USDA Gravimetric - August 2023"
+title: "Sapflow - USDA Fieldtrial - August 2023"
 author: "Aji John@DotMote Labs"
 date: "08/20/2023"
 output:
@@ -8,6 +8,14 @@ output:
 ---
 
 # Running notebook for the Sapflow data captured by Sapflow nodes (DotmoteLabs)
+
+## 50 - Bowen F2 - Full irrigated
+## 51 - Bowen F2 - Full irrigated
+## 52 - Bowen F2 - Full irrigated
+
+## 57 - Bowen L1 - Limited irrigation (70%)
+## 58 - Bowen L1 - Limited irrigation (70%)
+## 59 - Bowen L1 - Limited irrigation (70%)
 
 ```{r , include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -79,12 +87,6 @@ sapflow_usda_2023_datalog_51<-  read_csv('./data/usda/20230823/datalog.csv')
 # Tell R studio that timestamp is already in MDT
 sapflow_usda_2023_datalog_51$dateP <- as_datetime(sapflow_usda_2023_datalog_51$rtcUnixTimestamp, tz="America/Denver")
 
-
-
-
-
-
-
 ```
 
 One day
@@ -95,8 +97,8 @@ One day
       filter(dy %in% c(14)) %>%
   #filter(nodeId %in% c("sapflow-dotmote-labs-2" ,"sapflow-dotmote-labs-3", "sapflow-dotmote-labs-4","sapflow-dotmote-labs-5")) %>%
   ggplot() + 
-  geom_jitter(aes(hr,temp2) ,color="blue")  +
-    geom_jitter(aes(hr,temp1) ,color="red")  +
+  geom_smooth(aes(hr,temp2) ,color="blue")  +
+    geom_smooth(aes(hr,temp1) ,color="red")  +
   #facet_grid(~node) +
   theme_classic() + labs(x="Time (Hour)",y="Temperature (deg C)", title = "Node 51 USDA - Gravimetric Maize(2023)", caption="Source : dotmotelabs.com") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
@@ -605,6 +607,68 @@ sapflow_usda_2023_hr_59_repro %>%
   theme_classic() + labs(x="Date",y="Mean HR", title = "Node 59 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
   
+
+```
+## combine all the records
+```{r , echo=TRUE}
+field_repro_all_aug_2023 <- rbind ( sapflow_usda_2023_hr_50_repro, sapflow_usda_2023_hr_51_repro, sapflow_usda_2023_hr_52_repro,
+                                    sapflow_usda_2023_hr_57_repro,sapflow_usda_2023_hr_58_repro,sapflow_usda_2023_hr_59_repro)
+
+# Advance by 3 hours 60*1*60*2
+field_repro_all_aug_2023$datePbythree <- field_repro_all_aug_2023$dateP + 10800
+  
+```
+RRplot
+```{r , echo=TRUE}
+
+field_repro_all_aug_2023 %>% 
+  mutate(node = as.factor(nodeID),hr = hour(datePbythree),dy = day(datePbythree)) %>%
+  mutate(hrp = hour(dateP)) %>%
+  mutate(mr = meanHeatRatio) %>%
+  filter(node == 'sapflow-usda-50') %>%
+  filter(dy %in% c(14)) %>%
+    filter(dy %in% c(14,15,16)) %>%
+  ggplot() + 
+  geom_point(aes(hr,1/mr,color=node) )  +
+  geom_point(aes(hrp,1/mr,color='blue') )  +
+ facet_grid(~dy) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 50 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
+  scale_x_continuous(breaks = c(0:24)) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+
+```
+```{r , echo=TRUE}
+
+field_repro_all_aug_2023 %>% 
+  mutate(node = as.factor(nodeID),hr = hour(datePbythree),dy = day(datePbythree)) %>%
+  mutate(hrp = hour(dateP)) %>%
+  mutate(mr = meanHeatRatio) %>%
+  filter(node %in% c('sapflow-usda-50','sapflow-usda-51','sapflow-usda-57')) %>%
+ filter(dy %in% c(14)) %>%
+    filter(dy %in% c(14,15,16)) %>%
+  ggplot() + 
+  geom_smooth(aes(hr,1/mr,color=node) )  +
+  #geom_point(aes(hrp,1/mr,color='blue') )  +
+ facet_grid(~dy) +
+  theme_classic() + labs(x="Date",y="Mean HR", title = "Node 50 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
+  scale_x_continuous(breaks = c(0:24)) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+
+```
+## Pstc comparison
+```{r , echo=TRUE}
+
+sapflow_usda_2023_psy1limited<-  read_csv('./data/usda/psy1/PSY11AOF-limited.csv')
+sapflow_usda_2023_psy1limited %>% 
+  mutate(datep = as_datetime(`Date and Time`,format="%m/%d/%y %H:%M")) %>% 
+    mutate(wp = `Corrected Water Potential (MPa)`) %>% 
+  mutate(dy = day(datep)) %>%
+  filter(dy %in% c(22:23)) %>%
+  ggplot() +
+   geom_point(aes(datep,wp)) +
+     facet_wrap(vars(dy))
 
 ```
 
