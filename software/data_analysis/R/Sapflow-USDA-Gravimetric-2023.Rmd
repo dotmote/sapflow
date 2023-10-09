@@ -614,11 +614,20 @@ sapflow_usda_2023_hr_59_repro %>%
 field_repro_all_aug_2023 <- rbind ( sapflow_usda_2023_hr_50_repro, sapflow_usda_2023_hr_51_repro, sapflow_usda_2023_hr_52_repro,
                                     sapflow_usda_2023_hr_57_repro,sapflow_usda_2023_hr_58_repro,sapflow_usda_2023_hr_59_repro)
 
+field_repro_all_aug_2023$datePbythree <- field_repro_all_aug_2023$dateP
 # Advance by 3 hours 60*1*60*2
-field_repro_all_aug_2023$datePbythree <- field_repro_all_aug_2023$dateP + 10800
+field_repro_all_aug_2023[field_repro_all_aug_2023$nodeID=='sapflow-usda-50',]$datePbythree <- (field_repro_all_aug_2023[field_repro_all_aug_2023$nodeID=='sapflow-usda-50',]$dateP + 10800)
+
+# Advance by 6 hours 60*1*60*2
+field_repro_all_aug_2023[field_repro_all_aug_2023$nodeID=='sapflow-usda-51',]$datePbythree <- (field_repro_all_aug_2023[field_repro_all_aug_2023$nodeID=='sapflow-usda-51',]$dateP + 20800)
+
+# Advance by 9 hours 60*1*60*2
+field_repro_all_aug_2023[field_repro_all_aug_2023$nodeID=='sapflow-usda-57',]$datePbythree <- (field_repro_all_aug_2023[field_repro_all_aug_2023$nodeID=='sapflow-usda-57',]$dateP + 35800)
+
   
 ```
-RRplot
+
+## RRplot
 ```{r , echo=TRUE}
 
 field_repro_all_aug_2023 %>% 
@@ -645,8 +654,8 @@ field_repro_all_aug_2023 %>%
   mutate(hrp = hour(dateP)) %>%
   mutate(mr = meanHeatRatio) %>%
   filter(node %in% c('sapflow-usda-50','sapflow-usda-51','sapflow-usda-57')) %>%
- filter(dy %in% c(14)) %>%
-    filter(dy %in% c(14,15,16)) %>%
+ filter(dy %in% c(18)) %>%
+#    filter(dy %in% c(14,15,16)) %>%
   ggplot() + 
   geom_smooth(aes(hr,1/mr,color=node) )  +
   #geom_point(aes(hrp,1/mr,color='blue') )  +
@@ -670,6 +679,112 @@ sapflow_usda_2023_psy1limited %>%
    geom_point(aes(datep,wp)) +
      facet_wrap(vars(dy))
 
+```
+## Med full
+```{r , echo=TRUE}
+
+sapflow_usda_2023_psy1medfull<-  read_csv('./data/usda/psy1/LIRF-Psy3-medfull.csv')
+sapflow_usda_2023_psy1medfull %>% 
+  mutate(datep = as_datetime(`Date and Time`,format="%m/%d/%y %H:%M")) %>% 
+    mutate(wp = `Corrected Water Potential (MPa)`) %>% 
+  mutate(dy = day(datep)) %>%
+  filter(dy %in% c(22:23)) %>%
+  ggplot() +
+   geom_point(aes(datep,wp)) +
+     facet_wrap(vars(dy))
+
+```
+## base full
+```{r , echo=TRUE}
+
+sapflow_usda_2023_psy1basefull<-  read_csv('./data/usda/psy1/LIRF-Psy2-basefull.csv')
+sapflow_usda_2023_psy1basefull %>% 
+  mutate(datep = as_datetime(`Date and Time`,format="%m/%d/%y %H:%M")) %>% 
+    mutate(wp = `Corrected Water Potential (MPa)`) %>% 
+  mutate(dy = day(datep)) %>%
+  filter(dy %in% c(22:23)) %>%
+  ggplot() +
+   geom_point(aes(datep,wp)) +
+     facet_wrap(vars(dy))
+
+```
+## water pote
+```{r , echo=TRUE}
+
+sapflow_usda_2023_waterpotentials<-  read_csv('./data/usda/psy1/LIRF-waterpotentials.csv')
+sapflow_usda_2023_waterpotentials %>% 
+  mutate(datep = as_datetime(`Date and Time`,format="%m/%d/%y %H:%M")) %>% 
+    mutate(wp = `Corrected Water Potential (MPa)`) %>% 
+  mutate(dy = day(datep),hr = hour(datep),mth=month(datep) )%>%
+  filter(dy %in% c(22:23)) %>%
+  ggplot() +
+   geom_point(aes(datep,wp)) +
+     facet_wrap(vars(dy))
+
+```
+# get the weather
+
+```{r , echo=TRUE}
+
+sapflow_usda_2023_5minweather<-  read_csv('./data/usda/weather/CoAgMet_2023_LIRF_Data_w_VPD_July_15_to_Sep12_5min (1).csv')
+sapflow_usda_2023_5minweatherbst <- sapflow_usda_2023_5minweather %>% 
+  mutate(dy = day(TIMESTAMP_MST),hr = hour(TIMESTAMP_MST),mth = month(TIMESTAMP_MST)) %>% as.data.frame()
+
+sapflow_usda_2023_hourlyweather <- sapflow_usda_2023_5minweatherbst %>% dplyr::group_by(mth,dy,hr) %>%
+  dplyr::summarise(hrlyvpd = mean(VPD), 
+                   hrlytemp = mean(AirTemp_Avg_C),
+                   hrlyrh = mean(RH_Avg_fraction),
+                   hrlysr = mean(SolRad_W_m2),
+                   hrlyrain = mean(Rain_Tot_mm)) %>%
+  as.data.frame()
+```
+
+# vpd
+```{r , echo=TRUE}
+sapflow_usda_2023_hourlyweather %>% 
+ filter(mth %in% c(8)) %>%
+  filter(dy %in% c(21:25)) %>%
+  ggplot() +
+   geom_point(aes(hr,hrlyvpd)) +
+    # facet_wrap(vars(dy))
+  facet_grid(~dy) 
+```
+
+
+# solar radiation
+```{r , echo=TRUE}
+sapflow_usda_2023_hourlyweather %>% 
+ filter(mth %in% c(8)) %>%
+  filter(dy %in% c(21:25)) %>%
+  ggplot() +
+   geom_point(aes(hr,hrlysr)) +
+    # facet_wrap(vars(dy))
+  facet_grid(~dy) 
+```
+## rain
+
+```{r , echo=TRUE}
+sapflow_usda_2023_hourlyweather %>% 
+ filter(mth %in% c(8)) %>%
+  filter(dy %in% c(21:25)) %>%
+  ggplot() +
+   geom_point(aes(hr,hrlyrain)) +
+    # facet_wrap(vars(dy))
+  facet_grid(~dy) 
+```
+
+
+```{r , echo=TRUE}
+
+
+sapflow_usda_2023_5minweather %>% 
+  mutate(dy = day(TIMESTAMP_MST),hr = hour(TIMESTAMP_MST),mth = month(TIMESTAMP_MST)) %>% 
+ filter(mth %in% c(8)) %>%
+  filter(dy %in% c(21:25)) %>%
+  ggplot() +
+   geom_point(aes(TIMESTAMP_MST,VPD)) +
+    # facet_wrap(vars(dy))
+  facet_grid(~dy) 
 ```
 
 ## Get the scale data - January 2022
