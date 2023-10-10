@@ -535,7 +535,7 @@ sapflow_usda_2023_hr_59_repro$dateP <- as_datetime(sapflow_usda_2023_hr_59_repro
 sapflow_usda_2023_hr_50_repro %>% 
   mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
   mutate(mr = meanHeatRatio) %>%
-    filter(dy %in% c(14,15,16)) %>%
+    filter(dy %in% c(14,15,16,17,18)) %>%
   ggplot() + geom_point(aes(hr,1/mr,color=node) )  +
  facet_grid(~dy) +
   theme_classic() + labs(x="Date",y="Mean HR", title = "Node 50 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
@@ -548,7 +548,7 @@ sapflow_usda_2023_hr_50_repro %>%
 sapflow_usda_2023_hr_51_repro %>% 
   mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
   mutate(mr = meanHeatRatio) %>%
-    filter(dy %in% c(14,15,16)) %>%
+    filter(dy %in% c(14,15,16,17,18)) %>%
   ggplot() + geom_point(aes(hr,1/mr,color=node) )  +
  facet_grid(~dy) +
   theme_classic() + labs(x="Date",y="Mean HR", title = "Node 51 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
@@ -561,7 +561,7 @@ sapflow_usda_2023_hr_51_repro %>%
 sapflow_usda_2023_hr_52_repro %>% 
   mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
   mutate(mr = meanHeatRatio) %>%
-    filter(dy %in% c(14,15,16)) %>%
+    filter(dy %in% c(14,15,16,17,18)) %>%
   ggplot() + geom_point(aes(hr,1/mr,color=node) )  +
   facet_grid(~dy) +
   theme_classic() + labs(x="Date",y="Mean HR", title = "Node 52 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
@@ -574,7 +574,7 @@ sapflow_usda_2023_hr_52_repro %>%
 sapflow_usda_2023_hr_57_repro %>% 
   mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
   mutate(mr = meanHeatRatio) %>%
-    filter(dy %in% c(14,15,16)) %>%
+    filter(dy %in% c(14,15,16,17,18)) %>%
   ggplot() + geom_point(aes(hr,1/mr,color=node) )  +
   facet_grid(~dy) +
   theme_classic() + labs(x="Date",y="Mean HR", title = "Node 57 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
@@ -587,7 +587,7 @@ sapflow_usda_2023_hr_57_repro %>%
 sapflow_usda_2023_hr_58_repro %>% 
   mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
   mutate(mr = meanHeatRatio) %>%
-    filter(dy %in% c(14,15,16,17)) %>%
+    filter(dy %in% c(14,15,16,17,18)) %>%
   ggplot() + geom_point(aes(hr,1/mr,color=node) )  +
   facet_grid(~dy) +
   theme_classic() + labs(x="Date",y="Mean HR", title = "Node 58 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
@@ -601,7 +601,7 @@ sapflow_usda_2023_hr_58_repro %>%
 sapflow_usda_2023_hr_59_repro %>% 
   mutate(node = as.factor(nodeID),hr = hour(dateP),dy = day(dateP)) %>%
   mutate(mr = meanHeatRatio) %>%
-    filter(dy %in% c(14,15,16,17)) %>%
+    filter(dy %in% c(14,15,16,17,18)) %>%
   ggplot() + geom_point(aes(hr,1/mr,color=node) )  +
   facet_grid(~dy) +
   theme_classic() + labs(x="Date",y="Mean HR", title = "Node 59 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
@@ -635,11 +635,11 @@ field_repro_all_aug_2023 %>%
   mutate(hrp = hour(dateP)) %>%
   mutate(mr = meanHeatRatio) %>%
   filter(node == 'sapflow-usda-50') %>%
-  filter(dy %in% c(14)) %>%
-    filter(dy %in% c(14,15,16)) %>%
+  #filter(dy %in% c(14)) %>%
+    filter(dy %in% c(14,15,16,17,18)) %>%
   ggplot() + 
   geom_point(aes(hr,1/mr,color=node) )  +
-  geom_point(aes(hrp,1/mr,color='blue') )  +
+  #geom_point(aes(hrp,1/mr,color='blue') )  +
  facet_grid(~dy) +
   theme_classic() + labs(x="Date",y="Mean HR", title = "Node 50 - Gravimetric Maize", caption="Source : dotmotelabs.com") +
   scale_x_continuous(breaks = c(0:24)) +
@@ -647,6 +647,8 @@ field_repro_all_aug_2023 %>%
   
 
 ```
+##Plot the raw data
+
 ```{r , echo=TRUE}
 
 field_repro_all_aug_2023 %>% 
@@ -654,8 +656,8 @@ field_repro_all_aug_2023 %>%
   mutate(hrp = hour(dateP)) %>%
   mutate(mr = meanHeatRatio) %>%
   filter(node %in% c('sapflow-usda-50','sapflow-usda-51','sapflow-usda-57')) %>%
- filter(dy %in% c(18)) %>%
-#    filter(dy %in% c(14,15,16)) %>%
+ #filter(dy %in% c(18)) %>%
+   filter(dy %in% c(14,15,16,17)) %>%
   ggplot() + 
   geom_smooth(aes(hr,1/mr,color=node) )  +
   #geom_point(aes(hrp,1/mr,color='blue') )  +
@@ -673,12 +675,20 @@ sapflow_usda_2023_psy1limited<-  read_csv('./data/usda/psy1/PSY11AOF-limited.csv
 sapflow_usda_2023_psy1limited %>% 
   mutate(datep = as_datetime(`Date and Time`,format="%m/%d/%y %H:%M")) %>% 
     mutate(wp = `Corrected Water Potential (MPa)`) %>% 
-  mutate(dy = day(datep)) %>%
-  filter(dy %in% c(22:23)) %>%
+  mutate(dy = day(datep), mth=month(datep),hr=hour(datep)) %>%
+  filter(dy %in% c(21:24)) %>%
   ggplot() +
    geom_point(aes(datep,wp)) +
      facet_wrap(vars(dy))
 
+wpthreedayslimited <- sapflow_usda_2023_psy1limited %>% 
+  mutate(datep = as_datetime(`Date and Time`,format="%m/%d/%y %H:%M")) %>% 
+    mutate(wp = `Corrected Water Potential (MPa)`) %>% 
+  mutate(dy = day(datep), mth=month(datep),hr=hour(datep)) %>%
+  filter(dy %in% c(21:23)) %>%
+  dplyr::group_by(mth,dy,hr) %>%
+  dplyr::summarise(mwp = mean(wp)) %>%
+  as.data.frame()
 ```
 ## Med full
 ```{r , echo=TRUE}
@@ -687,11 +697,20 @@ sapflow_usda_2023_psy1medfull<-  read_csv('./data/usda/psy1/LIRF-Psy3-medfull.cs
 sapflow_usda_2023_psy1medfull %>% 
   mutate(datep = as_datetime(`Date and Time`,format="%m/%d/%y %H:%M")) %>% 
     mutate(wp = `Corrected Water Potential (MPa)`) %>% 
-  mutate(dy = day(datep)) %>%
+    mutate(dy = day(datep), mth=month(datep),hr=hour(datep)) %>%
   filter(dy %in% c(22:23)) %>%
   ggplot() +
    geom_point(aes(datep,wp)) +
      facet_wrap(vars(dy))
+
+wpthreedaysmedfull <- sapflow_usda_2023_psy1medfull %>% 
+  mutate(datep = as_datetime(`Date and Time`,format="%m/%d/%y %H:%M")) %>% 
+    mutate(wp = `Corrected Water Potential (MPa)`) %>% 
+  mutate(dy = day(datep), mth=month(datep),hr=hour(datep)) %>%
+  filter(dy %in% c(21:23)) %>%
+  dplyr::group_by(mth,dy,hr) %>%
+  dplyr::summarise(mwp = mean(wp)) %>%
+  as.data.frame()
 
 ```
 ## base full
@@ -701,11 +720,22 @@ sapflow_usda_2023_psy1basefull<-  read_csv('./data/usda/psy1/LIRF-Psy2-basefull.
 sapflow_usda_2023_psy1basefull %>% 
   mutate(datep = as_datetime(`Date and Time`,format="%m/%d/%y %H:%M")) %>% 
     mutate(wp = `Corrected Water Potential (MPa)`) %>% 
-  mutate(dy = day(datep)) %>%
+    mutate(dy = day(datep), mth=month(datep),hr=hour(datep)) %>%
   filter(dy %in% c(22:23)) %>%
   ggplot() +
    geom_point(aes(datep,wp)) +
      facet_wrap(vars(dy))
+
+wpthreedaysbasefull <- sapflow_usda_2023_psy1basefull %>% 
+  mutate(datep = as_datetime(`Date and Time`,format="%m/%d/%y %H:%M")) %>% 
+    mutate(wp = `Corrected Water Potential (MPa)`) %>% 
+  mutate(dy = day(datep), mth=month(datep),hr=hour(datep)) %>%
+  filter(dy %in% c(21:23)) %>%
+  dplyr::group_by(mth,dy,hr) %>%
+  dplyr::summarise(mwp = mean(wp)) %>%
+  as.data.frame()
+
+# 72 rows
 
 ```
 ## water pote
@@ -786,6 +816,296 @@ sapflow_usda_2023_5minweather %>%
     # facet_wrap(vars(dy))
   facet_grid(~dy) 
 ```
+
+## correct for zero flow
+filter(node %in% c('sapflow-usda-50','sapflow-usda-51','sapflow-usda-57')) %>%
+
+```{r , echo=TRUE}
+field_repro_all_aug_2023$nodeId <- field_repro_all_aug_2023$nodeID 
+field_repro_all_aug_2023subset <- field_repro_all_aug_2023 %>%  mutate(node = as.factor(nodeID),hr = hour(datePbythree),dy = day(datePbythree)) %>% filter(dy %in% c(14,15,16,17,18)) %>% 
+ # filter(node %in% c('sapflow-usda-50','sapflow-usda-51','sapflow-usda-57')) %>%
+  as.data.frame()
+
+
+
+usda_50_offset <- field_repro_all_aug_2023subset %>%  mutate(meanhr = meanHeatRatio) %>%
+  filter(!meanhr =='NaN') %>% 
+  filter(nodeId %in% c("sapflow-usda-50"))  %>% 
+  filter( hr %in% c(0,1,2)) %>% summarise(mhr = mean(meanhr))
+
+usda_51_offset <- field_repro_all_aug_2023subset %>%  mutate(meanhr = meanHeatRatio) %>%
+  filter(!meanhr =='NaN') %>% 
+  filter(nodeId %in% c("sapflow-usda-51"))  %>% 
+  filter( hr %in% c(0,1,2)) %>% summarise(mhr = mean(meanhr))
+
+usda_57_offset <- field_repro_all_aug_2023subset %>%  mutate(meanhr = meanHeatRatio) %>%
+  filter(!meanhr =='NaN') %>% 
+  filter(nodeId %in% c("sapflow-usda-57"))  %>% 
+  filter( hr %in% c(0,1,2)) %>% summarise(mhr = mean(meanhr))
+```
+## Offset for zero flow
+```{r , echo=TRUE}
+field_repro_all_aug_2023subset_adjusted <- field_repro_all_aug_2023subset
+field_repro_all_aug_2023subset_adjusted$mr <- 0
+field_repro_all_aug_2023subset_adjusted$type <- ''
+
+field_repro_all_aug_2023subset_adjusted[field_repro_all_aug_2023subset_adjusted$nodeId == "sapflow-usda-50",]$mr =  field_repro_all_aug_2023subset[field_repro_all_aug_2023subset$nodeId == "sapflow-usda-50",]$meanHeatRatio + (1-as.numeric(usda_50_offset))
+
+field_repro_all_aug_2023subset_adjusted[field_repro_all_aug_2023subset_adjusted$nodeId == "sapflow-usda-50",]$type = 'full'
+  
+field_repro_all_aug_2023subset_adjusted[field_repro_all_aug_2023subset_adjusted$nodeId == "sapflow-usda-51",]$mr =  field_repro_all_aug_2023subset_adjusted[field_repro_all_aug_2023subset$nodeId == "sapflow-usda-51",]$meanHeatRatio + (1-as.numeric(usda_51_offset))
+
+field_repro_all_aug_2023subset_adjusted[field_repro_all_aug_2023subset_adjusted$nodeId == "sapflow-usda-51",]$type = 'full' 
+  
+field_repro_all_aug_2023subset_adjusted[field_repro_all_aug_2023subset_adjusted$nodeId == "sapflow-usda-57",]$mr =  field_repro_all_aug_2023subset_adjusted[field_repro_all_aug_2023subset$nodeId == "sapflow-usda-57",]$meanHeatRatio + (1-as.numeric(usda_57_offset))
+
+field_repro_all_aug_2023subset_adjusted[field_repro_all_aug_2023subset_adjusted$nodeId == "sapflow-usda-57",]$type = 'limited' 
+  
+#SE 
+field_repro_all_aug_2023subset_adjusted_se <- summarySE(field_repro_all_aug_2023subset_adjusted, measurevar="mr", groupvars=c("nodeId","hr"))
+
+field_repro_all_aug_2023subset_adjusted$dt <- date(field_repro_all_aug_2023subset_adjusted$datePbythree)
+#SE by type, dy,hr
+field_repro_all_aug_2023subset_adjusted_type_dy_hr_se <- summarySE(field_repro_all_aug_2023subset_adjusted, measurevar="mr", groupvars=c("type","dt","hr"))
+
+```
+
+## Heat pulse velocity
+
+```{r , echo=TRUE}
+
+field_repro_all_aug_2023subset_adjusted %>% mutate(yr = year(datePbythree),mth = month(datePbythree),dy  = day(datePbythree)) %>%
+   filter(node %in% c('sapflow-usda-50','sapflow-usda-51','sapflow-usda-57')) %>%
+ # filter(yr %in% c(2022) & mth %in% c(05) & dy %in% c(24)) %>%
+  mutate (sv = log(1/mr) *3600 * (0.0025/0.6) ,daten = date(datePbythree))%>% 
+       filter(dy == 15 ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = datePbythree, y=sv,color=nodeId)) +
+   geom_line(aes(x = datePbythree, y=sv,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  facet_wrap(.~dy) +
+  theme(legend.position = c(.17, .6))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
+## Prepare dataframe for analysis
+```{r , echo=TRUE}
+
+field_repro_all_aug_2023subset_adjusted_fourdays <- field_repro_all_aug_2023subset_adjusted %>% mutate(yr = year(datePbythree),mth = month(datePbythree),dy  = day(datePbythree)) %>%
+   filter(node %in% c('sapflow-usda-50','sapflow-usda-51','sapflow-usda-57')) %>%
+  filter( dy %in% c(14:17)) %>%
+  mutate (sv = log(1/mr) *3600 * (0.0025/0.6) ,daten = date(datePbythree))%>% 
+  as.data.frame()
+
+```
+
+# plot 4 days
+
+```{r , echo=TRUE}
+
+field_repro_all_aug_2023subset_adjusted_fourdays %>% 
+       filter(dy %in% c(14) ) %>%
+ # filter(nodeId=="sapflow-dotmote-labs-2" )  %>% 
+  ggplot() +
+   geom_point(aes(x = datePbythree, y=sv,color=nodeId)) +
+   geom_smooth(aes(x = datePbythree, y=sv,color=nodeId)) +
+    theme_minimal() + scale_x_datetime(date_minor_breaks = "1 day") + 
+
+  scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  facet_wrap(.~dy) +
+  theme(legend.position = c(.17, .6))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1))
+
+```
+
+# water poyential and vh
+
+```{r , echo=TRUE}
+field_repro_all_aug_2023subset_adjusted_threedays <- field_repro_all_aug_2023subset_adjusted_fourdays %>%
+  filter(dy %in% c(14:16)) %>% as.data.frame()
+
+#SE
+field_repro_all_aug_2023subset_adjusted_type_dy_hr_se3nodes <- field_repro_all_aug_2023subset_adjusted_type_dy_hr_se %>% filter(type != '') %>% 
+   filter(dy %in% c(14:16)) %>%
+  as.data.frame()
+
+#SE
+field_repro_all_aug_2023subset_adjusted_type_dy_hr_se3nodes <- field_repro_all_aug_2023subset_adjusted_type_dy_hr_se %>% filter(type != '') %>% as.data.frame()
+
+``` 
+
+
+```{r , echo=TRUE}
+
+full <- field_repro_all_aug_2023subset_adjusted_type_dy_hr_se3nodes %>% filter(type =='full') %>% as.data.frame()
+
+limited <- field_repro_all_aug_2023subset_adjusted_type_dy_hr_se3nodes %>% filter(type =='limited') %>% as.data.frame()
+
+fitfield<- lm(full$mr~limited$mr)
+
+comparefullandlimited<-  ggplot()  +geom_point(aes(full$mr,limited$mr)) +
+  stat_smooth(aes(full$mr,limited$mr),method = "lm", col = "red",se = FALSE) +
+  # geom_smooth(method='lm', formula= full$mr~limited$mr) +
+    theme_minimal() +
+   labs(title="", y = "Vh - Limited Irrigation",x="Vh - Fully Irrigated",
+                colour = "Parameter") + theme(legend.position = c(.2, .8))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+
+annotate("text",x=0.9,y= 0.7, label=paste("Adj R^2 = ",signif(summary(fitfield)$adj.r.squared, 2),
+                       " P =",signif(summary(fitfield)$coef[2,4], 2)))
+
+comparefullandlimited
+```                       
+  
+
+```{r , echo=TRUE}
+
+field_repro_all_aug_2023subset_adjusted_type_dy_hr_se$fulldt <- as.POSIXct(paste(field_repro_all_aug_2023subset_adjusted_type_dy_hr_se$dt, paste0(field_repro_all_aug_2023subset_adjusted_type_dy_hr_se$hr,':',0,":",0), format="%Y-%m-%d %H:%M:%S"))
+```  
+
+```{r , echo=TRUE}
+allrawfullandlimitedts<-  field_repro_all_aug_2023subset_adjusted_type_dy_hr_se %>%
+   filter(type != '') %>%
+   ggplot()  +geom_point(aes(fulldt,1/mr,color=type)) +
+ # stat_smooth(aes(fulldt,1/mr,group=type,color=type),method = "loess",se = FALSE) +
+  # geom_smooth(method='lm', formula= full$mr~limited$mr) +
+    theme_minimal() +
+   labs(title="", y = "Vh - Limited Irrigation",x="Vh - Fully Irrigated",
+                colour = "Parameter") + theme(legend.position = c(.2, .8))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) 
+ # facet_wrap(.~dt) 
+
+allrawfullandlimitedts
+``` 
+# three day plot 
+
+```{r , echo=TRUE}
+allrawfullandlimited<-  field_repro_all_aug_2023subset_adjusted_type_dy_hr_se %>%
+   mutate(dy = day(dt)) %>%
+   filter(type != '') %>%
+  filter(dy %in% c(14,15,16)) %>%
+   ggplot()  +geom_point(aes(hr,1/mr,color=type)) +
+  stat_smooth(aes(hr,1/mr,group=type,color=type),method = "loess",se = FALSE) +
+  # geom_smooth(method='lm', formula= full$mr~limited$mr) +
+    theme_minimal() +
+   labs(title="", y = "Vh - Limited Irrigation",x="Vh - Fully Irrigated",
+                colour = "Treatment") + theme(legend.position = c(.1, .8))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+  facet_wrap(.~dt)
+#+
+#annotate("text",x=2,y= 0.7, label=paste("Adj R^2 = ",signif(summary(fitfield)$adj.r.squared, 2),
+#                       " P =",signif(summary(fitfield)$coef[2,4], 2)))
+
+allrawfullandlimited
+```  
+```{r , echo=TRUE}
+threedaysdata<-  field_repro_all_aug_2023subset_adjusted_type_dy_hr_se %>%
+   mutate(dy = day(dt)) %>%
+   filter(type != '') %>%
+  filter(dy %in% c(14,15,16)) %>% as.data.frame()
+
+```  
+
+#Water poyential and Vh (full)
+
+```{r , echo=TRUE}
+fulldatavh <- threedaysdata %>% filter(type=='full') %>% select(dy,hr,mr,se) %>% as.data.frame()
+fulldatavh[fulldatavh$dy==14,]$dy <- 21
+fulldatavh[fulldatavh$dy==15,]$dy <- 22
+fulldatavh[fulldatavh$dy==16,]$dy <- 23
+
+fullvhwp <- left_join(fulldatavh,wpthreedaysbasefull , by = c('dy','hr'))
+
+lmfullvhwpfit <- lm(fullvhwp$mr ~ fullvhwp$mwp)
+fieldfullexp_wpandvh <- fullvhwp%>% ggplot(aes(mwp,mr))  +geom_point() +
+  stat_smooth(method = "lm", col = "red",se = FALSE) +
+    theme_minimal() +
+   labs(title="Fully Irrigated", x = "Water Potential (MPa)",y="Vh",
+                colour = "Parameter") + theme(legend.position = c(.2, .8))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+
+annotate("text",x=-0.1,y= 0.7, label=paste("Adj R^2 = ",signif(summary(lmfullvhwpfit)$adj.r.squared, 2),
+                       " P =",signif(summary(lmfullvhwpfit)$coef[2,4], 2)))
+fieldfullexp_wpandvh
+```
+#Water poyential and Vh (full)
+
+```{r , echo=TRUE}
+limiteddatavh <- threedaysdata %>% filter(type=='limited') %>% select(dy,hr,mr,se) %>% as.data.frame()
+limiteddatavh[limiteddatavh$dy==14,]$dy <- 21
+limiteddatavh[limiteddatavh$dy==15,]$dy <- 22
+limiteddatavh[limiteddatavh$dy==16,]$dy <- 23
+
+limitedvhwp <- left_join(limiteddatavh,wpthreedayslimited , by = c('dy','hr'))
+
+lmlimitedvhwpfit <- lm(limitedvhwp$mr ~ limitedvhwp$mwp)
+fieldlimitedexp_wpandvh <- limitedvhwp%>% ggplot(aes(mwp,mr))  +geom_point() +
+  stat_smooth(method = "lm", col = "red",se = FALSE) +
+    theme_minimal() +
+   labs(title="Limited Irrigation", x = "Water Potential (MPa)",
+                colour = "Parameter") + 
+    scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+  theme(legend.position = c(.2, .8))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+
+annotate("text",x=-1,y= 0.7, label=paste("R^2 = ",signif(summary(lmlimitedvhwpfit)$r.squared, 2),
+                       " P =",signif(summary(lmlimitedvhwpfit)$coef[2,4], 2))  )
+fieldlimitedexp_wpandvh
+```
+
+#Vh and Vpd (limited)
+## Vh and vpd   (full)
+```{r , echo=TRUE}
+fieldexp_vpdandvh <- df_plot_douglasii%>% ggplot(aes(vh,E))  +geom_point() +
+  stat_smooth(method = "lm", col = "red",se = FALSE) +
+    theme_minimal() +
+   labs(title="Douglasii", y = "Transpiration [E]",x="Vh",
+                colour = "Parameter") + theme(legend.position = c(.2, .8))+
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+
+annotate("text",x=0,y= 15, label=paste("Adj R^2 = ",signif(summary(fit_douglasii)$adj.r.squared, 5),
+                       " P =",signif(summary(fit_douglasii)$coef[2,4], 5)))
+
+```
+
+
+```{r , echo=FALSE}
+plot_grid(kelloggii_eandhr,douglasii_eandhr,
+  nrow = 2,
+  ncol = 2,
+  labels = "AUTO",
+  label_size = 12,
+  align = "hv",
+  axis="tb",
+  scale = c(1, 1)
+)
+
+```
+
+
 
 ## Get the scale data - January 2022
 ```{r , echo=TRUE}
