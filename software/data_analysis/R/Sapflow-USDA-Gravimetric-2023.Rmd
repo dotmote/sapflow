@@ -1003,11 +1003,16 @@ allrawfullandlimited<-  field_repro_all_aug_2023subset_adjusted_type_dy_hr_se %>
   stat_smooth(aes(hr,1/mr,group=type,color=type),method = "loess",se = FALSE) +
   # geom_smooth(method='lm', formula= full$mr~limited$mr) +
     theme_minimal() +
-   labs(title="", y = "Vh - Limited Irrigation",x="Vh - Fully Irrigated",
+   labs(title="",x="Time (Hour)",
                 colour = "Treatment") + theme(legend.position = c(.1, .8))+
 guides(fill = guide_legend(keywidth = 1, keyheight = 1),
     linetype=guide_legend(keywidth = 3, keyheight = 1)) +
-  facet_wrap(.~dt)
+  facet_wrap(.~dt) +
+      scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) 
 #+
 #annotate("text",x=2,y= 0.7, label=paste("Adj R^2 = ",signif(summary(fitfield)$adj.r.squared, 2),
 #                       " P =",signif(summary(fitfield)$coef[2,4], 2)))
@@ -1036,12 +1041,17 @@ lmfullvhwpfit <- lm(fullvhwp$mr ~ fullvhwp$mwp)
 fieldfullexp_wpandvh <- fullvhwp%>% ggplot(aes(mwp,mr))  +geom_point() +
   stat_smooth(method = "lm", col = "red",se = FALSE) +
     theme_minimal() +
-   labs(title="Fully Irrigated", x = "Water Potential (MPa)",y="Vh",
+   labs(title="Fully Irrigated", x = "Water Potential (MPa)",
                 colour = "Parameter") + theme(legend.position = c(.2, .8))+
 guides(fill = guide_legend(keywidth = 1, keyheight = 1),
     linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+      scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
 
-annotate("text",x=-0.1,y= 0.7, label=paste("Adj R^2 = ",signif(summary(lmfullvhwpfit)$adj.r.squared, 2),
+  ) +
+
+annotate("text",x=-0.2,y= 0.7, label=paste("R^2 = ",signif(summary(lmfullvhwpfit)$r.squared, 2),
                        " P =",signif(summary(lmfullvhwpfit)$coef[2,4], 2)))
 fieldfullexp_wpandvh
 ```
@@ -1075,33 +1085,86 @@ annotate("text",x=-1,y= 0.7, label=paste("R^2 = ",signif(summary(lmlimitedvhwpfi
 fieldlimitedexp_wpandvh
 ```
 
+
+
 #Vh and Vpd (limited)
-## Vh and vpd   (full)
+
 ```{r , echo=TRUE}
-fieldexp_vpdandvh <- df_plot_douglasii%>% ggplot(aes(vh,E))  +geom_point() +
+
+hrlyweatherthreedays <- sapflow_usda_2023_hourlyweather %>% filter(dy %in% c(21,22,23)) %>%
+   filter(mth %in% c(8)) %>%
+    as.data.frame()
+fullvhweather <- left_join(fulldatavh,hrlyweatherthreedays , by = c('dy','hr'))
+
+fullvhweather$sv <- log(1/fullvhweather$mr) *3600 * (0.0025/0.6) 
+fullvhweatherfit <- lm(fullvhweather$sv ~ fullvhweather$hrlyvpd)
+ 
+fieldfullexp_vpdandvh <- fullvhweather%>% 
+  ggplot(aes(hrlyvpd,sv))  +geom_point() +
   stat_smooth(method = "lm", col = "red",se = FALSE) +
     theme_minimal() +
-   labs(title="Douglasii", y = "Transpiration [E]",x="Vh",
+   labs(title="Fully Irrigated", x = "VPD",
                 colour = "Parameter") + theme(legend.position = c(.2, .8))+
+
+    scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
 guides(fill = guide_legend(keywidth = 1, keyheight = 1),
     linetype=guide_legend(keywidth = 3, keyheight = 1)) +
 
-annotate("text",x=0,y= 15, label=paste("Adj R^2 = ",signif(summary(fit_douglasii)$adj.r.squared, 5),
-                       " P =",signif(summary(fit_douglasii)$coef[2,4], 5)))
+annotate("text",x=1,y= 5, label=paste("R^2 = ",signif(summary(fullvhweatherfit)$adj.r.squared, 2),
+                       " P =",signif(summary(fullvhweatherfit)$coef[2,4], 2)))
+fieldfullexp_vpdandvh
+```
 
+
+## Vh and vpd   (full)
+```{r , echo=TRUE}
+
+hrlyweatherthreedays <- sapflow_usda_2023_hourlyweather %>% filter(dy %in% c(21,22,23)) %>%
+   filter(mth %in% c(8)) %>%
+    as.data.frame()
+limitedvhweather <- left_join(limiteddatavh,hrlyweatherthreedays , by = c('dy','hr'))
+
+limitedvhweather$sv <- log(1/limitedvhweather$mr) *3600 * (0.0025/0.6) 
+limitedvhweatherfit <- lm(limitedvhweather$sv ~ limitedvhweather$hrlyvpd)
+ 
+fieldlimitedexp_vpdandvh <- limitedvhweather%>% 
+  ggplot(aes(hrlyvpd,sv))  +geom_point() +
+  stat_smooth(method = "lm", col = "red",se = FALSE) +
+    theme_minimal() +
+   labs(title="Limited Irrigation", x = "VPD",
+                colour = "Parameter") + theme(legend.position = c(.2, .8))+
+
+    scale_y_continuous(
+    # Features of the first axis
+    name = expression(~V[h] (cm~h^{"-1"}))
+
+  ) +
+guides(fill = guide_legend(keywidth = 1, keyheight = 1),
+    linetype=guide_legend(keywidth = 3, keyheight = 1)) +
+
+annotate("text",x=1,y= 5, label=paste("R^2 = ",signif(summary(limitedvhweatherfit)$adj.r.squared, 2),
+                       " P =",signif(summary(limitedvhweatherfit)$coef[2,4], 2)))
+fieldlimitedexp_vpdandvh
 ```
 
 
 ```{r , echo=FALSE}
-plot_grid(kelloggii_eandhr,douglasii_eandhr,
+library(cowplot)
+plot_grid(fieldlimitedexp_vpdandvh,fieldfullexp_vpdandvh, 
+          fieldlimitedexp_wpandvh,fieldfullexp_wpandvh, 
   nrow = 2,
   ncol = 2,
   labels = "AUTO",
   label_size = 12,
   align = "hv",
   axis="tb",
-  scale = c(1, 1)
-)
+  scale = c(1, 1))
+ggsave("figs/fig3_confsap.pdf", width = 20, height = 20, units = "cm")
+ggsave("figs/fig3_confsap.png", width = 20, height = 20, units = "cm")
 
 ```
 
